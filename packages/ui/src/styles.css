@@ -83,6 +83,8 @@
     background: var(--color-bg);
     color: var(--color-fg);
     font-feature-settings: 'cv11', 'ss01';
+    /* Long unbroken strings (URLs, handles) wrap instead of widening the page. */
+    overflow-wrap: break-word;
     -webkit-font-smoothing: antialiased;
   }
   *,

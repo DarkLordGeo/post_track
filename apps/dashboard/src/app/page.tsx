@@ -61,7 +61,7 @@ export default async function OverviewPage() {
           />
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
           <Card className="self-start">
             <CardHeader>
               <CardTitle>Recently tracked</CardTitle>

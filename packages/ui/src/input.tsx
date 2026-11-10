@@ -2,7 +2,7 @@ import * as React from 'react';
 import { cn } from './cn';
 
 const field =
-  'h-9 rounded-md border border-border bg-surface px-3 text-sm text-fg shadow-card placeholder:text-fg-subtle transition-colors hover:border-border-strong focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/60';
+  'h-9 pointer-coarse:h-11 rounded-md border border-border bg-surface px-3 text-sm text-fg shadow-card placeholder:text-fg-subtle transition-colors hover:border-border-strong focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/60';
 
 export function Input({ className, ...props }: React.InputHTMLAttributes<HTMLInputElement>) {
   return <input className={cn(field, 'w-full', className)} {...props} />;

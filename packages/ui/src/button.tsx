@@ -16,9 +16,9 @@ export const buttonVariants = cva(
           'bg-surface text-danger border border-border hover:bg-danger-soft hover:border-danger/30',
       },
       size: {
-        sm: 'h-8 px-2.5 text-[13px]',
-        md: 'h-9 px-3.5',
-        icon: 'size-8',
+        sm: 'h-8 px-2.5 text-[13px] pointer-coarse:h-10 pointer-coarse:px-3',
+        md: 'h-9 px-3.5 pointer-coarse:h-11',
+        icon: 'size-8 pointer-coarse:size-10',
       },
     },
     defaultVariants: { variant: 'secondary', size: 'md' },

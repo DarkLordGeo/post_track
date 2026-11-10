@@ -16,6 +16,8 @@ export const db = new PrismaClient({
 });
 
 export async function resetDb() {
+  await db.collectionPost.deleteMany();
+  await db.collection.deleteMany();
   await db.snapshot.deleteMany();
   await db.post.deleteMany();
 }

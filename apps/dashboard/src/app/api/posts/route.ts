@@ -30,12 +30,18 @@ const listQuery = z.object({
   dir: z.enum(['asc', 'desc']).optional(),
   take: z.coerce.number().int().min(1).max(200).optional(),
   skip: z.coerce.number().int().min(0).optional(),
+  collection: z.string().min(1).max(64).optional(),
 });
 
 export async function GET(req: Request) {
   const params = Object.fromEntries(new URL(req.url).searchParams);
   const parsed = listQuery.safeParse(params);
   if (!parsed.success) return errorResponse(422, 'Invalid query', parsed.error.issues);
-  const result = await listPosts({ ...parsed.data, sort: parsed.data.sort as SortKey | undefined });
+  const { collection, ...rest } = parsed.data;
+  const result = await listPosts({
+    ...rest,
+    collectionId: collection,
+    sort: rest.sort as SortKey | undefined,
+  });
   return json(result);
 }

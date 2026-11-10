@@ -15,7 +15,13 @@ const SORTS = [
   ['views', 'Views'],
 ] as const;
 
-export function PostsToolbar({ counts }: { counts: Record<string, number> }) {
+export function PostsToolbar({
+  counts,
+  collections,
+}: {
+  counts: Record<string, number>;
+  collections: { id: string; name: string; postCount: number }[];
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -24,6 +30,8 @@ export function PostsToolbar({ counts }: { counts: Record<string, number> }) {
 
   const update = (patch: Record<string, string | null>) => {
     const next = new URLSearchParams(params.toString());
+    // Any filter/sort change starts again from the first page.
+    if (!('page' in patch)) next.delete('page');
     for (const [k, v] of Object.entries(patch)) {
       if (v === null || v === '') next.delete(k);
       else next.set(k, v);
@@ -43,7 +51,7 @@ export function PostsToolbar({ counts }: { counts: Record<string, number> }) {
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
 
   return (
-    <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+    <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
       <div
         className="flex flex-wrap items-center gap-1 rounded-lg border border-border bg-surface-2 p-0.5"
         role="tablist"
@@ -58,7 +66,7 @@ export function PostsToolbar({ counts }: { counts: Record<string, number> }) {
               aria-selected={active}
               onClick={() => update({ platform: p })}
               className={cn(
-                'rounded-md px-2.5 py-1 text-[13px] font-medium transition-all',
+                'inline-flex items-center rounded-md px-2.5 py-1 text-[13px] font-medium transition-all pointer-coarse:min-h-10 pointer-coarse:px-3',
                 active
                   ? 'bg-surface text-fg shadow-card ring-1 ring-border'
                   : 'text-fg-muted hover:text-fg',
@@ -71,7 +79,7 @@ export function PostsToolbar({ counts }: { counts: Record<string, number> }) {
         })}
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <div className="relative w-full min-w-0 sm:w-64">
+        <div className="relative w-full min-w-0 sm:w-56 sm:flex-1 xl:w-64 xl:flex-none">
           <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-fg-subtle" />
           <Input
             type="search"
@@ -82,7 +90,23 @@ export function PostsToolbar({ counts }: { counts: Record<string, number> }) {
             aria-label="Search posts"
           />
         </div>
+        {collections.length > 0 && (
+          <Select
+            value={params.get('collection') ?? ''}
+            onChange={(e) => update({ collection: e.target.value || null })}
+            aria-label="Filter by collection"
+            className="min-w-0 max-w-full flex-1 sm:max-w-56 sm:flex-none"
+          >
+            <option value="">All collections</option>
+            {collections.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name} ({c.postCount})
+              </option>
+            ))}
+          </Select>
+        )}
         <Select
+          className="min-w-0 flex-1 sm:flex-none"
           value={params.get('sort') ?? 'tracked'}
           onChange={(e) => update({ sort: e.target.value })}
           aria-label="Sort by"
@@ -95,7 +119,7 @@ export function PostsToolbar({ counts }: { counts: Record<string, number> }) {
         </Select>
         <button
           onClick={() => update({ dir: dir === 'desc' ? 'asc' : 'desc' })}
-          className="grid size-9 place-items-center rounded-md border border-border bg-surface text-fg-muted shadow-card transition-colors hover:text-fg"
+          className="grid size-9 shrink-0 place-items-center rounded-md border pointer-coarse:size-11 border-border bg-surface text-fg-muted shadow-card transition-colors hover:text-fg"
           aria-label={dir === 'desc' ? 'Sorted descending' : 'Sorted ascending'}
           title={dir === 'desc' ? 'Descending' : 'Ascending'}
         >

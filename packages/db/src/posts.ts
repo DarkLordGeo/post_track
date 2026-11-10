@@ -126,6 +126,8 @@ export interface ListOptions {
   q?: string;
   platform?: Platform;
   status?: TrackingStatus;
+  /** Only posts that belong to this collection. */
+  collectionId?: string;
   sort?: SortKey;
   dir?: 'asc' | 'desc';
   take?: number;
@@ -146,6 +148,7 @@ export async function listPosts(opts: ListOptions = {}) {
   const where: Prisma.PostWhereInput = {
     platform: opts.platform,
     status: opts.status,
+    ...(opts.collectionId ? { collections: { some: { collectionId: opts.collectionId } } } : {}),
     ...(q
       ? {
           OR: [

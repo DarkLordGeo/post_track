@@ -15,16 +15,26 @@ function recentDelta(snapshots: Snapshot[], key: MetricKey) {
   return latest[key]! - prev[key]!;
 }
 
-export function PostTable({ posts }: { posts: Row[] }) {
+export function PostTable({
+  posts,
+  renderAction,
+}: {
+  posts: Row[];
+  /** Optional trailing control per row (rendered outside the row link). */
+  renderAction?: (post: Row) => React.ReactNode;
+}) {
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-surface shadow-card">
-      <div className="hidden grid-cols-[minmax(0,1fr)_88px_88px_88px_88px_104px] gap-4 border-b border-border bg-surface-2/60 px-4 py-2 text-[11px] font-medium tracking-wide text-fg-subtle uppercase lg:grid">
+      <div
+        className={`hidden gap-4 border-b ${renderAction ? 'pr-14' : ''} border-border bg-surface-2/60 px-4 py-2 text-[11px] font-medium tracking-wide text-fg-subtle uppercase xl:grid xl:grid-cols-[minmax(0,1fr)_88px_88px_88px_88px_104px]`}
+      >
         <span>Post</span>
         <span className="text-right">Likes</span>
         <span className="text-right">Comments</span>
         <span className="text-right">Shares</span>
         <span className="text-right">Views</span>
         <span className="text-right">Status</span>
+        {renderAction && <span className="sr-only">Actions</span>}
       </div>
       <ul className="divide-y divide-border">
         {posts.map((post, i) => {
@@ -33,12 +43,12 @@ export function PostTable({ posts }: { posts: Row[] }) {
           return (
             <li
               key={post.id}
-              className="animate-fade-up"
+              className="flex animate-fade-up items-stretch"
               style={{ animationDelay: `${Math.min(i, 12) * 18}ms` }}
             >
               <Link
                 href={`/posts/${post.id}`}
-                className="group grid gap-x-4 gap-y-2 px-4 py-3.5 transition-colors hover:bg-surface-2/60 lg:grid-cols-[minmax(0,1fr)_88px_88px_88px_88px_104px] lg:items-center"
+                className="group grid min-w-0 flex-1 gap-x-4 gap-y-2 px-4 py-3.5 transition-colors hover:bg-surface-2/60 xl:grid-cols-[minmax(0,1fr)_88px_88px_88px_88px_104px] xl:items-center"
               >
                 <div className="flex min-w-0 gap-3">
                   <PlatformMark platform={post.platform} className="mt-0.5" />
@@ -61,15 +71,15 @@ export function PostTable({ posts }: { posts: Row[] }) {
                     </p>
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-x-4 gap-y-1 pl-8 text-xs text-fg-muted lg:contents">
+                <div className="flex flex-wrap gap-x-4 gap-y-1 pl-8 text-xs text-fg-muted xl:contents">
                   {METRIC_KEYS.map((k) => {
                     const label = meta.metrics[k];
                     return (
                       <div
                         key={k}
-                        className={`${label ? 'flex' : 'hidden lg:flex'} items-baseline gap-1.5 lg:flex-col lg:items-end lg:gap-0.5`}
+                        className={`${label ? 'flex' : 'hidden xl:flex'} items-baseline gap-1.5 xl:flex-col xl:items-end xl:gap-0.5`}
                       >
-                        <span className="lg:hidden">{label ?? k}</span>
+                        <span className="xl:hidden">{label ?? k}</span>
                         <MetricValue
                           value={m[k]}
                           className="text-sm font-medium text-fg"
@@ -81,11 +91,16 @@ export function PostTable({ posts }: { posts: Row[] }) {
                       </div>
                     );
                   })}
-                  <div className="lg:text-right">
+                  <div className="xl:text-right">
                     <StatusBadge status={post.status} />
                   </div>
                 </div>
               </Link>
+              {renderAction && (
+                <div className="flex shrink-0 items-start pt-2.5 pr-2 xl:items-center xl:pt-0">
+                  {renderAction(post)}
+                </div>
+              )}
             </li>
           );
         })}

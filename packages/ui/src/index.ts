@@ -5,3 +5,4 @@ export { Badge, badgeVariants } from './badge';
 export { Input, Select } from './input';
 export { Skeleton } from './skeleton';
 export { EmptyState } from './empty-state';
+export { Dialog } from './dialog';

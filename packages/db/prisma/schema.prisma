@@ -58,7 +58,8 @@ model Post {
   lastError           String?
   consecutiveFailures Int       @default(0)
 
-  snapshots Snapshot[]
+  snapshots   Snapshot[]
+  collections CollectionPost[]
 
   @@unique([platform, platformPostId])
   @@index([trackedAt])
@@ -77,4 +78,26 @@ model Snapshot {
   views      Int?
 
   @@index([postId, capturedAt])
+}
+
+/// A user-curated group of tracked posts. Posts can belong to many collections.
+model Collection {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  posts       CollectionPost[]
+}
+
+/// Membership of a post in a collection. Deleting either side only removes the membership.
+model CollectionPost {
+  collectionId String
+  postId       String
+  addedAt      DateTime   @default(now())
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  post         Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([collectionId, postId])
+  @@index([postId])
 }

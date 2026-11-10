@@ -1,11 +1,12 @@
 import { METRIC_KEYS, PLATFORM_META, type MediaRef } from '@post-tracker/core';
-import { getPost } from '@post-tracker/db';
+import { collectionsForPost, getPost, listCollections } from '@post-tracker/db';
 import { Card, CardContent, CardHeader, CardTitle } from '@post-tracker/ui';
 import { ArrowLeft, ExternalLink, ImageIcon, Link2, Video } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { EngagementChart, type ChartPoint } from '@/components/engagement-chart';
+import { PostCollections } from '@/components/collections/post-collections';
 import { DeltaChip, MetricValue } from '@/components/metric';
 import { PlatformLabel } from '@/components/platform';
 import { PostActions } from '@/components/post-actions';
@@ -26,7 +27,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
   return (
     <div className="flex items-start justify-between gap-4 py-2 text-sm">
       <dt className="shrink-0 text-fg-muted">{label}</dt>
-      <dd className="min-w-0 text-right text-fg">
+      <dd className="min-w-0 text-right [overflow-wrap:anywhere] text-fg">
         {children ?? <span className="text-fg-subtle">Unavailable</span>}
       </dd>
     </div>
@@ -51,6 +52,14 @@ export default async function PostPage({ params }: Props) {
     views: s.views,
   }));
   const history = [...post.snapshots].reverse();
+  // Only show history columns the platform provides or that actually hold data.
+  const historyKeys = METRIC_KEYS.filter(
+    (k) => meta.metrics[k] || post.snapshots.some((snap) => snap[k] !== null),
+  );
+  const [memberOf, allCollections] = await Promise.all([
+    collectionsForPost(post.id),
+    listCollections(),
+  ]);
 
   return (
     <div className="animate-fade-up">
@@ -70,7 +79,7 @@ export default async function PostPage({ params }: Props) {
               )}
               <StatusBadge status={post.status} />
             </div>
-            <h1 className="mt-2 text-xl leading-snug font-semibold tracking-tight text-pretty text-fg">
+            <h1 className="mt-2 text-xl leading-snug font-semibold tracking-tight text-pretty [overflow-wrap:anywhere] text-fg">
               {postHeadline(post)}
             </h1>
             <a
@@ -136,7 +145,7 @@ export default async function PostPage({ params }: Props) {
                 <CardTitle>Content preview</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm leading-relaxed whitespace-pre-line text-fg-muted">
+                <p className="text-sm leading-relaxed whitespace-pre-line [overflow-wrap:anywhere] text-fg-muted">
                   {post.contentPreview}
                 </p>
               </CardContent>
@@ -156,11 +165,11 @@ export default async function PostPage({ params }: Props) {
               </CardContent>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[520px] text-sm">
+                <table className="w-full min-w-[360px] text-sm">
                   <thead>
                     <tr className="border-y border-border bg-surface-2/60 text-[11px] tracking-wide text-fg-subtle uppercase">
                       <th className="px-5 py-2 text-left font-medium">Captured</th>
-                      {METRIC_KEYS.map((k) => (
+                      {historyKeys.map((k) => (
                         <th key={k} className="px-3 py-2 text-right font-medium">
                           {meta.metrics[k] ?? k}
                         </th>
@@ -177,7 +186,7 @@ export default async function PostPage({ params }: Props) {
                         >
                           {formatDateTime(s.capturedAt)}
                         </td>
-                        {METRIC_KEYS.map((k) => (
+                        {historyKeys.map((k) => (
                           <td key={k} className="px-3 py-2 text-right">
                             <MetricValue value={s[k]} mode="full" />
                           </td>
@@ -194,7 +203,19 @@ export default async function PostPage({ params }: Props) {
           </Card>
         </div>
 
-        <aside className="space-y-6">
+        <aside className="min-w-0 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Collections</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PostCollections
+                postId={post.id}
+                memberOf={memberOf}
+                all={allCollections.map(({ id, name }) => ({ id, name }))}
+              />
+            </CardContent>
+          </Card>
           <Card>
             <CardHeader>
               <CardTitle>Details</CardTitle>
@@ -233,7 +254,7 @@ export default async function PostPage({ params }: Props) {
 
           <Card>
             <CardHeader>
-              <CardTitle>Collection</CardTitle>
+              <CardTitle>Data collection</CardTitle>
             </CardHeader>
             <CardContent>
               <dl className="divide-y divide-border">
@@ -282,7 +303,7 @@ export default async function PostPage({ params }: Props) {
                           className="flex items-center gap-2 text-sm text-fg-muted hover:text-accent"
                         >
                           <Icon className="size-3.5 shrink-0" />
-                          <span className="truncate">
+                          <span className="min-w-0 truncate">
                             {new URL(m.url).hostname + new URL(m.url).pathname}
                           </span>
                         </a>

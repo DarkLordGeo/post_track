@@ -1,11 +1,12 @@
 import { PLATFORMS, type Platform } from '@post-tracker/core';
-import { listPosts, prisma, type SortKey } from '@post-tracker/db';
+import { listCollections, listPosts, prisma, type SortKey } from '@post-tracker/db';
 import { EmptyState } from '@post-tracker/ui';
 import { Inbox, SearchX } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { PageHeader } from '@/components/app-shell';
+import { Pagination } from '@/components/pagination';
 import { PostTable } from '@/components/post-table';
 import { PostsToolbar } from '@/components/posts-toolbar';
 
@@ -13,6 +14,7 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Tracked posts' };
 
 const SORTS: SortKey[] = ['tracked', 'published', 'likes', 'comments', 'shares', 'views'];
+const PAGE_SIZE = 25;
 
 export default async function PostsPage({
   searchParams,
@@ -26,11 +28,23 @@ export default async function PostsPage({
   const sort = SORTS.includes(sp.sort as SortKey) ? (sp.sort as SortKey) : 'tracked';
   const dir = sp.dir === 'asc' ? 'asc' : 'desc';
   const q = sp.q?.slice(0, 200);
+  const page = Math.max(1, Math.floor(Number(sp.page)) || 1);
 
+  const collections = await listCollections();
+  const collection = collections.find((c) => c.id === sp.collection);
   const [{ items, total }, grouped] = await Promise.all([
-    listPosts({ q, platform, sort, dir, take: 100 }),
+    listPosts({
+      q,
+      platform,
+      collectionId: collection?.id,
+      sort,
+      dir,
+      take: PAGE_SIZE,
+      skip: (page - 1) * PAGE_SIZE,
+    }),
     prisma.post.groupBy({ by: ['platform'], _count: { _all: true } }),
   ]);
+  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const counts = Object.fromEntries(grouped.map((g) => [g.platform, g._count._all]));
   const anyTracked = grouped.length > 0;
 
@@ -40,22 +54,32 @@ export default async function PostsPage({
         title="Tracked posts"
         description={
           anyTracked
-            ? `${total} ${total === 1 ? 'post' : 'posts'}${q || platform ? ' match your filters' : ' in your collection'}`
-            : 'Your collection is empty'
+            ? `${total} ${total === 1 ? 'post' : 'posts'}${q || platform || collection ? ' match your filters' : ' tracked'}`
+            : 'Nothing tracked yet'
         }
       />
       <div className="space-y-4 px-4 py-6 sm:px-8">
         <Suspense>
-          <PostsToolbar counts={counts} />
+          <PostsToolbar counts={counts} collections={collections} />
         </Suspense>
         {items.length > 0 ? (
-          <PostTable posts={items} />
+          <>
+            <PostTable posts={items} />
+            <Pagination
+              page={page}
+              pageCount={pageCount}
+              total={total}
+              pageSize={PAGE_SIZE}
+              searchParams={sp}
+              basePath="/posts"
+            />
+          </>
         ) : anyTracked ? (
           <div className="rounded-lg border border-dashed border-border-strong">
             <EmptyState
               icon={<SearchX />}
               title="No posts match"
-              description="Try a different search term or platform filter."
+              description="Try a different search term, platform or collection filter."
               action={
                 <Link href="/posts" className="text-sm font-medium text-accent hover:underline">
                   Clear filters
