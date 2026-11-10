@@ -119,7 +119,7 @@ export function App() {
         ) : (
           <>
             <p className="label">No supported post here</p>
-            <p className="hint">Open a Reddit post to start tracking.</p>
+            <p className="hint">Open a post on Reddit, X or LinkedIn to start tracking.</p>
           </>
         )}
       </section>

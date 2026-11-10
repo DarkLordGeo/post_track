@@ -6,7 +6,7 @@ export default defineConfig({
   manifest: {
     name: 'Post Tracker',
     description: 'Track Reddit, X and LinkedIn posts and monitor their engagement over time.',
-    permissions: ['storage', 'alarms'],
+    permissions: ['storage'],
     host_permissions: ['http://localhost/*', 'http://127.0.0.1/*'],
     optional_host_permissions: ['https://*/*', 'http://*/*'],
   },

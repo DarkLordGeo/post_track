@@ -1,10 +1,12 @@
 import type { PlatformAdapter, PostIdentity } from '../types';
 import { hostMatches, safeUrl } from '../util';
+import { linkedInAdapter } from './linkedin';
 import { redditAdapter } from './reddit';
+import { xAdapter } from './x';
 
-export { redditAdapter };
+export { linkedInAdapter, redditAdapter, xAdapter };
 
-export const adapters: PlatformAdapter[] = [redditAdapter];
+export const adapters: PlatformAdapter[] = [redditAdapter, xAdapter, linkedInAdapter];
 
 export function adapterForUrl(url: string): PlatformAdapter | null {
   const parsed = safeUrl(url);
