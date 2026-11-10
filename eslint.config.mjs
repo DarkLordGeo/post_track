@@ -4,7 +4,18 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 
 export default tseslint.config(
-  { ignores: ['**/node_modules', '**/.next', '**/.output', '**/.wxt', '**/.data', '**/next-env.d.ts', 'test-results', 'playwright-report'] },
+  {
+    ignores: [
+      '**/node_modules',
+      '**/.next',
+      '**/.output',
+      '**/.wxt',
+      '**/.data',
+      '**/next-env.d.ts',
+      'test-results',
+      'playwright-report',
+    ],
+  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
@@ -13,7 +24,12 @@ export default tseslint.config(
     rules: {
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
     },
   },
+  // Playwright fixtures use a `use` callback that is not a React hook.
+  { files: ['e2e/**'], rules: { 'react-hooks/rules-of-hooks': 'off' } },
 );

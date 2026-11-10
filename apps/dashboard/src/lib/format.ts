@@ -31,7 +31,9 @@ export function timeAgo(date: Date | string | null | undefined, now = Date.now()
 
 export function formatDateTime(date: Date | string | null | undefined) {
   if (!date) return null;
-  return new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(date));
+  return new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short' }).format(
+    new Date(date),
+  );
 }
 
 export function metricLabel(platform: Platform, key: MetricKey) {

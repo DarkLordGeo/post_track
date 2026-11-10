@@ -25,7 +25,9 @@ export function App() {
       setDraft(b);
     });
     void check();
-    void browser.tabs.query({ active: true, currentWindow: true }).then(([t]) => setTab({ url: t?.url }));
+    void browser.tabs
+      .query({ active: true, currentWindow: true })
+      .then(([t]) => setTab({ url: t?.url }));
   }, []);
 
   const identity = tab?.url ? identifyUrl(tab.url) : null;
@@ -33,8 +35,15 @@ export function App() {
 
   useEffect(() => {
     if (!identity || health !== 'online') return;
-    void send({ type: 'lookup', posts: [{ platform: identity.platform, platformPostId: identity.platformPostId }] }).then((r) =>
-      setTrackedId(r.ok ? (r.data.tracked[`${identity.platform}:${identity.platformPostId}`] ?? null) : undefined),
+    void send({
+      type: 'lookup',
+      posts: [{ platform: identity.platform, platformPostId: identity.platformPostId }],
+    }).then((r) =>
+      setTrackedId(
+        r.ok
+          ? (r.data.tracked[`${identity.platform}:${identity.platformPostId}`] ?? null)
+          : undefined,
+      ),
     );
   }, [identity?.platformPostId, health]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -62,7 +71,16 @@ export function App() {
       <header>
         <div className="brand">
           <span className="logo">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M2 11.5 6 7.5l2.5 2.5L14 4.5" /><path d="M10.5 4.5H14V8" /></svg>
+            <svg
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+            >
+              <path d="M2 11.5 6 7.5l2.5 2.5L14 4.5" />
+              <path d="M10.5 4.5H14V8" />
+            </svg>
           </span>
           Post Tracker
         </div>
@@ -78,10 +96,17 @@ export function App() {
             <p className="label">{PLATFORM_META[identity.platform].label} post</p>
             <p className="value mono">{identity.platformPostId}</p>
             <p className="hint">
-              {trackedId ? 'Tracked — engagement is being recorded.' : trackedId === null ? 'Not tracked yet. Use the Track button on the page.' : ' '}
+              {trackedId
+                ? 'Tracked — engagement is being recorded.'
+                : trackedId === null
+                  ? 'Not tracked yet. Use the Track button on the page.'
+                  : ' '}
             </p>
             {trackedId && (
-              <button className="primary" onClick={() => void send({ type: 'open-dashboard', path: `/posts/${trackedId}` })}>
+              <button
+                className="primary"
+                onClick={() => void send({ type: 'open-dashboard', path: `/posts/${trackedId}` })}
+              >
                 Open in dashboard
               </button>
             )}
@@ -100,19 +125,41 @@ export function App() {
       </section>
 
       {health === 'offline' && (
-        <p className="warn">Can't reach the dashboard at {apiBase}. Start it with <code>pnpm dev</code>.</p>
+        <p className="warn">
+          Can't reach the dashboard at {apiBase}. Start it with <code>pnpm dev</code>.
+        </p>
       )}
 
       <div className="row">
-        <button className="secondary" onClick={() => void send({ type: 'open-dashboard', path: '/posts' })}>All tracked posts</button>
-        <button className="ghost" onClick={() => setEditing((v) => !v)}>Settings</button>
+        <button
+          className="secondary"
+          onClick={() => void send({ type: 'open-dashboard', path: '/posts' })}
+        >
+          All tracked posts
+        </button>
+        <button className="ghost" onClick={() => setEditing((v) => !v)}>
+          Settings
+        </button>
       </div>
 
       {editing && (
-        <form className="settings" onSubmit={(e) => { e.preventDefault(); void save(); }}>
+        <form
+          className="settings"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void save();
+          }}
+        >
           <label htmlFor="base">Dashboard URL</label>
-          <input id="base" value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={DEFAULT_API_BASE} />
-          <button className="primary" type="submit">Save</button>
+          <input
+            id="base"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            placeholder={DEFAULT_API_BASE}
+          />
+          <button className="primary" type="submit">
+            Save
+          </button>
         </form>
       )}
     </div>

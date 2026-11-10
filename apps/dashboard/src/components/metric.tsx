@@ -18,7 +18,11 @@ export function MetricValue({
 }) {
   if (value === null || value === undefined) {
     return (
-      <span className={cn('text-fg-subtle', className)} title={unavailableHint} aria-label="unavailable">
+      <span
+        className={cn('text-fg-subtle', className)}
+        title={unavailableHint}
+        aria-label="unavailable"
+      >
         —
       </span>
     );

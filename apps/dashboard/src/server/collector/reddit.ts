@@ -54,7 +54,8 @@ export function createRedditFetcher(config: RedditConfig): PlatformFetcher {
       if (!config.clientId || !config.clientSecret) {
         return {
           kind: 'unsupported',
-          reason: 'Reddit API credentials are not configured (REDDIT_CLIENT_ID / REDDIT_CLIENT_SECRET).',
+          reason:
+            'Reddit API credentials are not configured (REDDIT_CLIENT_ID / REDDIT_CLIENT_SECRET).',
         };
       }
       let accessToken: string;
@@ -74,14 +75,18 @@ export function createRedditFetcher(config: RedditConfig): PlatformFetcher {
       }
 
       if (res.status === 429) {
-        const reset = Number(res.headers.get('x-ratelimit-reset') ?? res.headers.get('retry-after') ?? 60);
+        const reset = Number(
+          res.headers.get('x-ratelimit-reset') ?? res.headers.get('retry-after') ?? 60,
+        );
         return { kind: 'rate-limited', retryAt: new Date(now() + Math.max(reset, 1) * 1000) };
       }
       if (res.status === 401) token = null;
       if (!res.ok) return errorAll(targets, `Reddit API returned HTTP ${res.status}`);
 
       const body = (await res.json()) as { data?: { children?: RedditThing[] } };
-      const byId = new Map((body.data?.children ?? []).map((c) => [c.data.id.toLowerCase(), c.data]));
+      const byId = new Map(
+        (body.data?.children ?? []).map((c) => [c.data.id.toLowerCase(), c.data]),
+      );
       const results = new Map<string, FetchResult>();
       for (const t of targets) {
         const data = byId.get(t.platformPostId);
@@ -114,5 +119,8 @@ export function createRedditFetcher(config: RedditConfig): PlatformFetcher {
 }
 
 function errorAll(targets: CollectTarget[], reason: string): BatchResult {
-  return { kind: 'results', results: new Map(targets.map((t) => [t.id, { kind: 'error', reason }])) };
+  return {
+    kind: 'results',
+    results: new Map(targets.map((t) => [t.id, { kind: 'error', reason }])),
+  };
 }

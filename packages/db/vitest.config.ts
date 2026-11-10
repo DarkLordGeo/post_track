@@ -7,7 +7,8 @@ export default defineConfig({
     fileParallelism: false,
     env: {
       DATABASE_URL:
-        process.env.TEST_DATABASE_URL ?? 'postgresql://postgres:postgres@localhost:54329/post_tracker_test',
+        process.env.TEST_DATABASE_URL ??
+        'postgresql://postgres:postgres@localhost:54329/post_tracker_test',
     },
   },
 });

@@ -44,7 +44,11 @@ export function PostsToolbar({ counts }: { counts: Record<string, number> }) {
 
   return (
     <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-      <div className="flex flex-wrap items-center gap-1 rounded-lg border border-border bg-surface-2 p-0.5" role="tablist" aria-label="Platform">
+      <div
+        className="flex flex-wrap items-center gap-1 rounded-lg border border-border bg-surface-2 p-0.5"
+        role="tablist"
+        aria-label="Platform"
+      >
         {[null, ...PLATFORMS].map((p) => {
           const active = platform === p || (!platform && p === null);
           return (
@@ -55,7 +59,9 @@ export function PostsToolbar({ counts }: { counts: Record<string, number> }) {
               onClick={() => update({ platform: p })}
               className={cn(
                 'rounded-md px-2.5 py-1 text-[13px] font-medium transition-all',
-                active ? 'bg-surface text-fg shadow-card ring-1 ring-border' : 'text-fg-muted hover:text-fg',
+                active
+                  ? 'bg-surface text-fg shadow-card ring-1 ring-border'
+                  : 'text-fg-muted hover:text-fg',
               )}
             >
               {p ? PLATFORM_META[p].label : 'All'}
@@ -65,7 +71,7 @@ export function PostsToolbar({ counts }: { counts: Record<string, number> }) {
         })}
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <div className="relative min-w-0 flex-1 sm:w-64 sm:flex-none">
+        <div className="relative w-full min-w-0 sm:w-64">
           <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-fg-subtle" />
           <Input
             type="search"
@@ -76,7 +82,11 @@ export function PostsToolbar({ counts }: { counts: Record<string, number> }) {
             aria-label="Search posts"
           />
         </div>
-        <Select value={params.get('sort') ?? 'tracked'} onChange={(e) => update({ sort: e.target.value })} aria-label="Sort by">
+        <Select
+          value={params.get('sort') ?? 'tracked'}
+          onChange={(e) => update({ sort: e.target.value })}
+          aria-label="Sort by"
+        >
           {SORTS.map(([v, l]) => (
             <option key={v} value={v}>
               {l}
@@ -89,9 +99,19 @@ export function PostsToolbar({ counts }: { counts: Record<string, number> }) {
           aria-label={dir === 'desc' ? 'Sorted descending' : 'Sorted ascending'}
           title={dir === 'desc' ? 'Descending' : 'Ascending'}
         >
-          {dir === 'desc' ? <ArrowDownWideNarrow className="size-4" /> : <ArrowUpNarrowWide className="size-4" />}
+          {dir === 'desc' ? (
+            <ArrowDownWideNarrow className="size-4" />
+          ) : (
+            <ArrowUpNarrowWide className="size-4" />
+          )}
         </button>
-        <span className={cn('size-1.5 rounded-full bg-accent transition-opacity', pending ? 'opacity-100 animate-pulse' : 'opacity-0')} aria-hidden />
+        <span
+          className={cn(
+            'size-1.5 rounded-full bg-accent transition-opacity',
+            pending ? 'opacity-100 animate-pulse' : 'opacity-0',
+          )}
+          aria-hidden
+        />
       </div>
     </div>
   );

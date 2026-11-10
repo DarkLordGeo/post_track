@@ -5,18 +5,29 @@ import { Pause, Play, RefreshCw, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
-export function PostActions({ id, status }: { id: string; status: 'ACTIVE' | 'PAUSED' | 'UNAVAILABLE' }) {
+export function PostActions({
+  id,
+  status,
+}: {
+  id: string;
+  status: 'ACTIVE' | 'PAUSED' | 'UNAVAILABLE';
+}) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<{ tone: 'ok' | 'err'; text: string } | null>(null);
   const [, startTransition] = useTransition();
 
-  async function run(name: string, fn: () => Promise<Response>, onOk?: (res: Response) => Promise<string | void>) {
+  async function run(
+    name: string,
+    fn: () => Promise<Response>,
+    onOk?: (res: Response) => Promise<string | void>,
+  ) {
     setBusy(name);
     setMessage(null);
     try {
       const res = await fn();
-      if (!res.ok && res.status !== 204) throw new Error((await res.json().catch(() => null))?.error ?? `HTTP ${res.status}`);
+      if (!res.ok && res.status !== 204)
+        throw new Error((await res.json().catch(() => null))?.error ?? `HTTP ${res.status}`);
       const text = await onOk?.(res);
       if (text) setMessage({ tone: 'ok', text });
       startTransition(() => router.refresh());
@@ -51,9 +62,13 @@ export function PostActions({ id, status }: { id: string; status: 'ACTIVE' | 'PA
 
   const remove = () => {
     if (!confirm('Stop tracking this post and delete its history?')) return;
-    run('delete', () => fetch(`/api/posts/${id}`, { method: 'DELETE' }), async () => {
-      router.push('/posts');
-    });
+    run(
+      'delete',
+      () => fetch(`/api/posts/${id}`, { method: 'DELETE' }),
+      async () => {
+        router.push('/posts');
+      },
+    );
   };
 
   return (
@@ -72,7 +87,10 @@ export function PostActions({ id, status }: { id: string; status: 'ACTIVE' | 'PA
         </Button>
       </div>
       {message && (
-        <p role="status" className={`max-w-sm text-right text-xs ${message.tone === 'ok' ? 'text-fg-muted' : 'text-danger'}`}>
+        <p
+          role="status"
+          className={`max-w-sm text-right text-xs ${message.tone === 'ok' ? 'text-fg-muted' : 'text-danger'}`}
+        >
           {message.text}
         </p>
       )}

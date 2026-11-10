@@ -1,4 +1,10 @@
-import type { DetectedPost, ExtractedPost, MediaRef, PlatformAdapter, PostIdentity } from '../types';
+import type {
+  DetectedPost,
+  ExtractedPost,
+  MediaRef,
+  PlatformAdapter,
+  PostIdentity,
+} from '../types';
 import { hostMatches, parseCount, preview, safeUrl, toIsoDate } from '../util';
 
 const HOSTS = ['reddit.com', 'redd.it'];
@@ -75,7 +81,8 @@ function extractShreddit(el: Element, pageUrl: string): ExtractedPost | null {
   const author = el.getAttribute('author');
   const deleted = !author || author === '[deleted]' || el.hasAttribute('is-author-deleted');
   const bodyEl = el.querySelector('[slot="text-body"]');
-  const title = el.getAttribute('post-title') ?? el.querySelector('[slot="title"]')?.textContent ?? null;
+  const title =
+    el.getAttribute('post-title') ?? el.querySelector('[slot="title"]')?.textContent ?? null;
   return {
     ...id,
     originalUrl: pageUrl,

@@ -26,7 +26,9 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
   return (
     <div className="flex items-start justify-between gap-4 py-2 text-sm">
       <dt className="shrink-0 text-fg-muted">{label}</dt>
-      <dd className="min-w-0 text-right text-fg">{children ?? <span className="text-fg-subtle">Unavailable</span>}</dd>
+      <dd className="min-w-0 text-right text-fg">
+        {children ?? <span className="text-fg-subtle">Unavailable</span>}
+      </dd>
     </div>
   );
 }
@@ -53,18 +55,30 @@ export default async function PostPage({ params }: Props) {
   return (
     <div className="animate-fade-up">
       <div className="border-b border-border px-4 pt-6 pb-5 sm:px-8">
-        <Link href="/posts" className="inline-flex items-center gap-1 text-[13px] text-fg-muted hover:text-fg">
+        <Link
+          href="/posts"
+          className="inline-flex items-center gap-1 text-[13px] text-fg-muted hover:text-fg"
+        >
           <ArrowLeft className="size-3.5" /> Tracked posts
         </Link>
         <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 max-w-3xl">
             <div className="flex flex-wrap items-center gap-2">
               <PlatformLabel platform={post.platform} />
-              {post.community && <span className="text-[13px] text-fg-muted">· {post.community}</span>}
+              {post.community && (
+                <span className="text-[13px] text-fg-muted">· {post.community}</span>
+              )}
               <StatusBadge status={post.status} />
             </div>
-            <h1 className="mt-2 text-xl leading-snug font-semibold tracking-tight text-pretty text-fg">{postHeadline(post)}</h1>
-            <a href={post.canonicalUrl} target="_blank" rel="noreferrer" className="mt-1.5 inline-flex items-center gap-1 text-[13px] text-fg-muted hover:text-accent">
+            <h1 className="mt-2 text-xl leading-snug font-semibold tracking-tight text-pretty text-fg">
+              {postHeadline(post)}
+            </h1>
+            <a
+              href={post.canonicalUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-1.5 inline-flex items-center gap-1 text-[13px] text-fg-muted hover:text-accent"
+            >
               Open on {meta.label} <ExternalLink className="size-3" />
             </a>
           </div>
@@ -80,18 +94,26 @@ export default async function PostPage({ params }: Props) {
               const supported = !!label;
               return (
                 <Card key={k} className={supported ? 'p-4' : 'p-4 bg-surface-2/50 shadow-none'}>
-                  <p className="text-xs font-medium text-fg-muted">{label ?? k[0]!.toUpperCase() + k.slice(1)}</p>
+                  <p className="text-xs font-medium text-fg-muted">
+                    {label ?? k[0]!.toUpperCase() + k.slice(1)}
+                  </p>
                   <div className="mt-1.5 flex items-baseline gap-2">
                     <MetricValue
                       value={latest[k]}
                       mode="full"
                       className="text-2xl font-semibold tracking-tight text-fg"
-                      unavailableHint={supported ? 'Not captured yet' : `${meta.label} does not expose this metric`}
+                      unavailableHint={
+                        supported ? 'Not captured yet' : `${meta.label} does not expose this metric`
+                      }
                     />
                     <DeltaChip value={metricDelta(post.snapshots, k)} />
                   </div>
                   <p className="mt-1 text-[11px] text-fg-subtle">
-                    {!supported ? `Not provided by ${meta.label}` : latest[k] === null ? 'Not captured yet' : 'since tracking began'}
+                    {!supported
+                      ? `Not provided by ${meta.label}`
+                      : latest[k] === null
+                        ? 'Not captured yet'
+                        : 'since tracking began'}
                   </p>
                 </Card>
               );
@@ -114,7 +136,9 @@ export default async function PostPage({ params }: Props) {
                 <CardTitle>Content preview</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm leading-relaxed whitespace-pre-line text-fg-muted">{post.contentPreview}</p>
+                <p className="text-sm leading-relaxed whitespace-pre-line text-fg-muted">
+                  {post.contentPreview}
+                </p>
               </CardContent>
             </Card>
           )}
@@ -125,7 +149,10 @@ export default async function PostPage({ params }: Props) {
             </CardHeader>
             {history.length === 0 ? (
               <CardContent>
-                <p className="text-sm text-fg-muted">No snapshots yet. Metrics are recorded when you view the post with the extension, or by the collector.</p>
+                <p className="text-sm text-fg-muted">
+                  No snapshots yet. Metrics are recorded when you view the post with the extension,
+                  or by the collector.
+                </p>
               </CardContent>
             ) : (
               <div className="overflow-x-auto">
@@ -134,7 +161,9 @@ export default async function PostPage({ params }: Props) {
                     <tr className="border-y border-border bg-surface-2/60 text-[11px] tracking-wide text-fg-subtle uppercase">
                       <th className="px-5 py-2 text-left font-medium">Captured</th>
                       {METRIC_KEYS.map((k) => (
-                        <th key={k} className="px-3 py-2 text-right font-medium">{meta.metrics[k] ?? k}</th>
+                        <th key={k} className="px-3 py-2 text-right font-medium">
+                          {meta.metrics[k] ?? k}
+                        </th>
                       ))}
                       <th className="px-5 py-2 text-right font-medium">Source</th>
                     </tr>
@@ -142,7 +171,10 @@ export default async function PostPage({ params }: Props) {
                   <tbody className="divide-y divide-border">
                     {history.slice(0, 50).map((s) => (
                       <tr key={s.id} className="hover:bg-surface-2/40">
-                        <td className="px-5 py-2 whitespace-nowrap text-fg-muted" title={s.capturedAt.toISOString()}>
+                        <td
+                          className="px-5 py-2 whitespace-nowrap text-fg-muted"
+                          title={s.capturedAt.toISOString()}
+                        >
                           {formatDateTime(s.capturedAt)}
                         </td>
                         {METRIC_KEYS.map((k) => (
@@ -150,7 +182,9 @@ export default async function PostPage({ params }: Props) {
                             <MetricValue value={s[k]} mode="full" />
                           </td>
                         ))}
-                        <td className="px-5 py-2 text-right text-xs text-fg-subtle">{s.source === 'COLLECTOR' ? 'Collector' : 'Extension'}</td>
+                        <td className="px-5 py-2 text-right text-xs text-fg-subtle">
+                          {s.source === 'COLLECTOR' ? 'Collector' : 'Extension'}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -170,14 +204,25 @@ export default async function PostPage({ params }: Props) {
                 <Row label="Author">
                   {post.authorName &&
                     (post.authorUrl ? (
-                      <a href={post.authorUrl} target="_blank" rel="noreferrer" className="hover:text-accent">
+                      <a
+                        href={post.authorUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="hover:text-accent"
+                      >
                         {post.authorHandle ?? post.authorName}
                       </a>
                     ) : (
                       post.authorName
                     ))}
                 </Row>
-                <Row label="Published">{post.publishedAt && <span title={post.publishedAt.toISOString()}>{formatDateTime(post.publishedAt)}</span>}</Row>
+                <Row label="Published">
+                  {post.publishedAt && (
+                    <span title={post.publishedAt.toISOString()}>
+                      {formatDateTime(post.publishedAt)}
+                    </span>
+                  )}
+                </Row>
                 <Row label="Tracked">{formatDateTime(post.trackedAt)}</Row>
                 <Row label="Post ID">
                   <code className="font-mono text-xs">{post.platformPostId}</code>
@@ -192,15 +237,29 @@ export default async function PostPage({ params }: Props) {
             </CardHeader>
             <CardContent>
               <dl className="divide-y divide-border">
-                <Row label="Status"><StatusBadge status={post.status} /></Row>
-                <Row label="Last collected">{post.lastCollectedAt ? timeAgo(post.lastCollectedAt) : <span className="text-fg-subtle">Never</span>}</Row>
+                <Row label="Status">
+                  <StatusBadge status={post.status} />
+                </Row>
+                <Row label="Last collected">
+                  {post.lastCollectedAt ? (
+                    timeAgo(post.lastCollectedAt)
+                  ) : (
+                    <span className="text-fg-subtle">Never</span>
+                  )}
+                </Row>
                 <Row label="Next run">
-                  {post.status === 'ACTIVE' && post.nextCollectAt ? timeAgo(post.nextCollectAt) : <span className="text-fg-subtle">—</span>}
+                  {post.status === 'ACTIVE' && post.nextCollectAt ? (
+                    timeAgo(post.nextCollectAt)
+                  ) : (
+                    <span className="text-fg-subtle">—</span>
+                  )}
                 </Row>
                 <Row label="Snapshots">{formatCount(post.snapshots.length)}</Row>
               </dl>
               {post.lastError && (
-                <p className="mt-3 rounded-md bg-warn-soft px-3 py-2 text-xs leading-relaxed text-fg-muted">{post.lastError}</p>
+                <p className="mt-3 rounded-md bg-warn-soft px-3 py-2 text-xs leading-relaxed text-fg-muted">
+                  {post.lastError}
+                </p>
               )}
             </CardContent>
           </Card>
@@ -216,9 +275,16 @@ export default async function PostPage({ params }: Props) {
                     const Icon = MEDIA_ICON[m.type];
                     return (
                       <li key={m.url}>
-                        <a href={m.url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-fg-muted hover:text-accent">
+                        <a
+                          href={m.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center gap-2 text-sm text-fg-muted hover:text-accent"
+                        >
                           <Icon className="size-3.5 shrink-0" />
-                          <span className="truncate">{new URL(m.url).hostname + new URL(m.url).pathname}</span>
+                          <span className="truncate">
+                            {new URL(m.url).hostname + new URL(m.url).pathname}
+                          </span>
                         </a>
                       </li>
                     );

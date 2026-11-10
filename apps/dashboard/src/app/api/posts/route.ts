@@ -12,7 +12,10 @@ export async function POST(req: Request) {
   if (!body.ok) return body.response;
   try {
     const { post, created } = await trackPost(body.data);
-    const res: TrackResponse = { created, post: { id: post.id, dashboardUrl: `${appUrl(req)}/posts/${post.id}` } };
+    const res: TrackResponse = {
+      created,
+      post: { id: post.id, dashboardUrl: `${appUrl(req)}/posts/${post.id}` },
+    };
     return json(res, { status: created ? 201 : 200 });
   } catch (err) {
     console.error('track failed', err);

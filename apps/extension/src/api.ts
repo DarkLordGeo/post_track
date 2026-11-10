@@ -1,4 +1,11 @@
-import { postKey, type ExtractedPost, type LookupResponse, type Metrics, type Platform, type TrackResponse } from '@post-tracker/core';
+import {
+  postKey,
+  type ExtractedPost,
+  type LookupResponse,
+  type Metrics,
+  type Platform,
+  type TrackResponse,
+} from '@post-tracker/core';
 import type { Result } from './messages';
 import { getApiBase } from './settings';
 
@@ -22,7 +29,8 @@ async function call<T>(path: string, init?: RequestInit): Promise<Result<T>> {
 }
 
 export const api = {
-  track: (post: ExtractedPost) => call<TrackResponse>('/api/posts', { method: 'POST', body: JSON.stringify(post) }),
+  track: (post: ExtractedPost) =>
+    call<TrackResponse>('/api/posts', { method: 'POST', body: JSON.stringify(post) }),
   lookup: (posts: { platform: Platform; platformPostId: string }[]) =>
     call<LookupResponse>('/api/posts/lookup', { method: 'POST', body: JSON.stringify({ posts }) }),
   observe: (platform: Platform, platformPostId: string, metrics: Metrics) =>

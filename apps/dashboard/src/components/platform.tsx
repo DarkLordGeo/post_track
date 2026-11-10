@@ -37,7 +37,11 @@ export function PlatformMark({ platform, className }: { platform: Platform; clas
   return (
     <span
       title={PLATFORM_META[platform].label}
-      className={cn('inline-grid size-5 shrink-0 place-items-center rounded-[5px] [&_svg]:size-[70%]', m.bg, className)}
+      className={cn(
+        'inline-grid size-5 shrink-0 place-items-center rounded-[5px] [&_svg]:size-[70%]',
+        m.bg,
+        className,
+      )}
     >
       {m.glyph}
     </span>

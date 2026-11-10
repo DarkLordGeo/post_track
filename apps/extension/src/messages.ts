@@ -1,4 +1,10 @@
-import type { ExtractedPost, LookupResponse, Metrics, Platform, TrackResponse } from '@post-tracker/core';
+import type {
+  ExtractedPost,
+  LookupResponse,
+  Metrics,
+  Platform,
+  TrackResponse,
+} from '@post-tracker/core';
 
 export type Request =
   | { type: 'track'; post: ExtractedPost }
@@ -19,14 +25,17 @@ export interface ResponseMap {
 
 export async function send<T extends Request>(msg: T): Promise<Result<ResponseMap[T['type']]>> {
   try {
-    const res = (await browser.runtime.sendMessage(msg)) as Result<ResponseMap[T['type']]> | undefined;
+    const res = (await browser.runtime.sendMessage(msg)) as
+      Result<ResponseMap[T['type']]> | undefined;
     return res ?? { ok: false, error: 'No response from the extension background worker.' };
   } catch (err) {
     // Happens after the extension is reloaded while an old content script is still on the page.
     const message = (err as Error).message ?? String(err);
     return {
       ok: false,
-      error: /context invalidated/i.test(message) ? 'Post Tracker was updated — reload this page.' : message,
+      error: /context invalidated/i.test(message)
+        ? 'Post Tracker was updated — reload this page.'
+        : message,
     };
   }
 }

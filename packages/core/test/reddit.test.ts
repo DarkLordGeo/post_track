@@ -7,14 +7,38 @@ const fixture = (name: string) => readFileSync(join(__dirname, 'fixtures', name)
 
 describe('reddit URL handling', () => {
   it.each([
-    ['https://www.reddit.com/r/programming/comments/1xojg3s/openssh_on_musl/', '1xojg3s', 'https://www.reddit.com/r/programming/comments/1xojg3s/'],
-    ['https://old.reddit.com/r/programming/comments/1XOJG3S/x/?sort=top', '1xojg3s', 'https://www.reddit.com/r/programming/comments/1xojg3s/'],
-    ['https://www.reddit.com/r/programming/comments/1xojg3s/slug/abc1234/', '1xojg3s', 'https://www.reddit.com/r/programming/comments/1xojg3s/'],
+    [
+      'https://www.reddit.com/r/programming/comments/1xojg3s/openssh_on_musl/',
+      '1xojg3s',
+      'https://www.reddit.com/r/programming/comments/1xojg3s/',
+    ],
+    [
+      'https://old.reddit.com/r/programming/comments/1XOJG3S/x/?sort=top',
+      '1xojg3s',
+      'https://www.reddit.com/r/programming/comments/1xojg3s/',
+    ],
+    [
+      'https://www.reddit.com/r/programming/comments/1xojg3s/slug/abc1234/',
+      '1xojg3s',
+      'https://www.reddit.com/r/programming/comments/1xojg3s/',
+    ],
     ['https://redd.it/1xojg3s', '1xojg3s', 'https://www.reddit.com/comments/1xojg3s/'],
-    ['https://www.reddit.com/comments/1xojg3s', '1xojg3s', 'https://www.reddit.com/comments/1xojg3s/'],
-    ['https://www.reddit.com/user/someone/comments/1xojg3s/t/', '1xojg3s', 'https://www.reddit.com/comments/1xojg3s/'],
+    [
+      'https://www.reddit.com/comments/1xojg3s',
+      '1xojg3s',
+      'https://www.reddit.com/comments/1xojg3s/',
+    ],
+    [
+      'https://www.reddit.com/user/someone/comments/1xojg3s/t/',
+      '1xojg3s',
+      'https://www.reddit.com/comments/1xojg3s/',
+    ],
   ])('%s', (url, id, canonical) => {
-    expect(identifyUrl(url)).toEqual({ platform: 'REDDIT', platformPostId: id, canonicalUrl: canonical });
+    expect(identifyUrl(url)).toEqual({
+      platform: 'REDDIT',
+      platformPostId: id,
+      canonicalUrl: canonical,
+    });
   });
 
   it.each([
@@ -38,14 +62,20 @@ describe('reddit extraction (new reddit, real markup)', () => {
       expect(p.anchor.getAttribute('slot')).toBe('credit-bar');
       expect(p.placement).toBe('append');
     }
-    const ids = posts.map((p) => redditAdapter.identify(p.element, 'https://www.reddit.com/r/programming/')?.platformPostId);
+    const ids = posts.map(
+      (p) =>
+        redditAdapter.identify(p.element, 'https://www.reddit.com/r/programming/')?.platformPostId,
+    );
     expect(new Set(ids).size).toBe(3);
   });
 
   it('extracts link post metadata and metrics', () => {
     document.documentElement.innerHTML = fixture('reddit-listing.html');
     const [first] = redditAdapter.detectPosts(document);
-    const post = redditAdapter.extract(first!.element, 'https://www.reddit.com/r/programming/top/')!;
+    const post = redditAdapter.extract(
+      first!.element,
+      'https://www.reddit.com/r/programming/top/',
+    )!;
     expect(post).toMatchObject({
       platform: 'REDDIT',
       platformPostId: '1xojg3s',

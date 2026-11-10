@@ -8,6 +8,12 @@ export interface PlatformMeta {
 
 export const PLATFORM_META: Record<Platform, PlatformMeta> = {
   REDDIT: { label: 'Reddit', metrics: { likes: 'Score', comments: 'Comments' } },
-  X: { label: 'X', metrics: { likes: 'Likes', comments: 'Replies', shares: 'Reposts', views: 'Views' } },
-  LINKEDIN: { label: 'LinkedIn', metrics: { likes: 'Reactions', comments: 'Comments', shares: 'Reposts' } },
+  X: {
+    label: 'X',
+    metrics: { likes: 'Likes', comments: 'Replies', shares: 'Reposts', views: 'Views' },
+  },
+  LINKEDIN: {
+    label: 'LinkedIn',
+    metrics: { likes: 'Reactions', comments: 'Comments', shares: 'Reposts' },
+  },
 };

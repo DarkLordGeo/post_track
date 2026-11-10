@@ -1,10 +1,12 @@
 /**
- * Parse human formatted counts: "1,234", "1.2k", "3.4M", "12 comments", "1.2万" is not supported.
+ * Parse human formatted counts: "1,234", "1.2k", "3.4M", "12 comments".
  * Returns null when the text contains no recognisable number (unavailable, not zero).
  */
 export function parseCount(input: string | null | undefined): number | null {
   if (input == null) return null;
-  const text = String(input).trim().replace(/ /g, ' ');
+  const text = String(input)
+    .trim()
+    .replace(/\u00a0/g, ' ');
   if (!text) return null;
   const match = text.match(/(-?\d[\d,.\s]*)\s*([kKmMbB])?/);
   if (!match) return null;

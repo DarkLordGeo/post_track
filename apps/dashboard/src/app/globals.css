@@ -4,5 +4,7 @@
 @source '../../../../packages/ui/src';
 
 @layer base {
-  .tabular { font-variant-numeric: tabular-nums; }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
 }

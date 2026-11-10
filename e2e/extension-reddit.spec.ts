@@ -10,10 +10,15 @@ test.beforeEach(resetDb);
 const buttonIn = (page: import('@playwright/test').Page, scope: string) =>
   page.locator(`${scope} post-tracker-action`).first().locator('button');
 
-test('tracks a Reddit post from its page, detects duplicates and stores metadata', async ({ context, worker }) => {
+test('tracks a Reddit post from its page, detects duplicates and stores metadata', async ({
+  context,
+  worker,
+}) => {
   expect(worker.url()).toContain('chrome-extension://');
   const page = await context.newPage();
-  await page.goto('https://www.reddit.com/r/programming/top/?t=week', { waitUntil: 'domcontentloaded' });
+  await page.goto('https://www.reddit.com/r/programming/top/?t=week', {
+    waitUntil: 'domcontentloaded',
+  });
   const permalink = await page.locator('shreddit-post').first().getAttribute('permalink');
   expect(permalink).toBeTruthy();
 
@@ -45,14 +50,18 @@ test('tracks a Reddit post from its page, detects duplicates and stores metadata
 
   // Reload: the extension recognises the post as already tracked.
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await expect(buttonIn(page, 'shreddit-post')).toHaveAttribute('data-state', 'tracked', { timeout: 20_000 });
+  await expect(buttonIn(page, 'shreddit-post')).toHaveAttribute('data-state', 'tracked', {
+    timeout: 20_000,
+  });
   expect(await db.post.count()).toBe(1);
 });
 
 test('injects one button per post in a subreddit feed', async ({ context, worker: _w }) => {
   const page = await context.newPage();
   await page.goto('https://www.reddit.com/r/programming/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('shreddit-post post-tracker-action').first()).toBeAttached({ timeout: 20_000 });
+  await expect(page.locator('shreddit-post post-tracker-action').first()).toBeAttached({
+    timeout: 20_000,
+  });
   const posts = await page.locator('shreddit-post').count();
   const buttons = await page.locator('shreddit-post post-tracker-action').count();
   expect(posts).toBeGreaterThan(1);
@@ -62,7 +71,10 @@ test('injects one button per post in a subreddit feed', async ({ context, worker
   const url = page.url();
   const second = page.locator('shreddit-post').nth(1);
   await second.locator('post-tracker-action button').click();
-  await expect(second.locator('post-tracker-action button')).toHaveAttribute('data-state', 'tracked');
+  await expect(second.locator('post-tracker-action button')).toHaveAttribute(
+    'data-state',
+    'tracked',
+  );
   expect(page.url()).toBe(url);
   expect(await db.post.count()).toBe(1);
 });
@@ -70,7 +82,9 @@ test('injects one button per post in a subreddit feed', async ({ context, worker
 test('shows a clear error when the dashboard is unreachable', async ({ context, worker }) => {
   await worker.evaluate(() => chrome.storage.local.set({ apiBase: 'http://localhost:3999' }));
   const page = await context.newPage();
-  await page.goto('https://www.reddit.com/r/programming/top/?t=week', { waitUntil: 'domcontentloaded' });
+  await page.goto('https://www.reddit.com/r/programming/top/?t=week', {
+    waitUntil: 'domcontentloaded',
+  });
   const button = buttonIn(page, 'shreddit-post');
   await expect(button).toHaveAttribute('data-state', 'idle', { timeout: 20_000 });
   await button.click();

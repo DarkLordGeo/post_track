@@ -31,7 +31,11 @@ export function PostTable({ posts }: { posts: Row[] }) {
           const m = latestMetrics(post);
           const meta = PLATFORM_META[post.platform];
           return (
-            <li key={post.id} className="animate-fade-up" style={{ animationDelay: `${Math.min(i, 12) * 18}ms` }}>
+            <li
+              key={post.id}
+              className="animate-fade-up"
+              style={{ animationDelay: `${Math.min(i, 12) * 18}ms` }}
+            >
               <Link
                 href={`/posts/${post.id}`}
                 className="group grid gap-x-4 gap-y-2 px-4 py-3.5 transition-colors hover:bg-surface-2/60 lg:grid-cols-[minmax(0,1fr)_88px_88px_88px_88px_104px] lg:items-center"
@@ -43,11 +47,17 @@ export function PostTable({ posts }: { posts: Row[] }) {
                       {postHeadline(post)}
                     </p>
                     <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs text-fg-muted">
-                      {post.community && <span className="font-medium text-fg-muted">{post.community}</span>}
+                      {post.community && (
+                        <span className="font-medium text-fg-muted">{post.community}</span>
+                      )}
                       {post.community && <span aria-hidden>·</span>}
-                      <span>{post.authorName ? `by ${post.authorName}` : 'author unavailable'}</span>
+                      <span>
+                        {post.authorName ? `by ${post.authorName}` : 'author unavailable'}
+                      </span>
                       <span aria-hidden>·</span>
-                      <span title={post.trackedAt.toISOString()}>tracked {timeAgo(post.trackedAt)}</span>
+                      <span title={post.trackedAt.toISOString()}>
+                        tracked {timeAgo(post.trackedAt)}
+                      </span>
                     </p>
                   </div>
                 </div>
@@ -55,12 +65,17 @@ export function PostTable({ posts }: { posts: Row[] }) {
                   {METRIC_KEYS.map((k) => {
                     const label = meta.metrics[k];
                     return (
-                      <div key={k} className="flex items-baseline gap-1.5 lg:flex-col lg:items-end lg:gap-0.5">
+                      <div
+                        key={k}
+                        className={`${label ? 'flex' : 'hidden lg:flex'} items-baseline gap-1.5 lg:flex-col lg:items-end lg:gap-0.5`}
+                      >
                         <span className="lg:hidden">{label ?? k}</span>
                         <MetricValue
                           value={m[k]}
                           className="text-sm font-medium text-fg"
-                          unavailableHint={label ? 'Not captured yet' : `${meta.label} does not expose ${k}`}
+                          unavailableHint={
+                            label ? 'Not captured yet' : `${meta.label} does not expose ${k}`
+                          }
                         />
                         <DeltaChip value={recentDelta(post.snapshots, k)} />
                       </div>

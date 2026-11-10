@@ -39,7 +39,13 @@ describe('trackPost', () => {
     expect(created).toBe(true);
     const full = await getPost(post.id);
     expect(full!.snapshots).toHaveLength(1);
-    expect(full!.snapshots[0]).toMatchObject({ likes: 10, comments: 0, shares: null, views: null, source: 'EXTENSION' });
+    expect(full!.snapshots[0]).toMatchObject({
+      likes: 10,
+      comments: 0,
+      shares: null,
+      views: null,
+      source: 'EXTENSION',
+    });
     expect(full!.latestComments).toBe(0);
     expect(full!.latestShares).toBeNull();
     expect(full!.nextCollectAt).not.toBeNull();
@@ -47,7 +53,12 @@ describe('trackPost', () => {
 
   it('deduplicates by platform + id and backfills missing fields only', async () => {
     const first = await trackPost(base);
-    const again = await trackPost({ ...base, title: 'Changed', contentPreview: 'Body text', originalUrl: 'https://redd.it/abc123' });
+    const again = await trackPost({
+      ...base,
+      title: 'Changed',
+      contentPreview: 'Body text',
+      originalUrl: 'https://redd.it/abc123',
+    });
     expect(again.created).toBe(false);
     expect(again.post.id).toBe(first.post.id);
     expect(again.post.title).toBe('Hello Rust');
@@ -63,7 +74,10 @@ describe('trackPost', () => {
   });
 
   it('does not create an empty snapshot when no metrics are available', async () => {
-    const { post } = await trackPost({ ...base, metrics: { likes: null, comments: null, shares: null, views: null } });
+    const { post } = await trackPost({
+      ...base,
+      metrics: { likes: null, comments: null, shares: null, views: null },
+    });
     expect((await getPost(post.id))!.snapshots).toHaveLength(0);
   });
 });
@@ -81,7 +95,10 @@ describe('lookup + observe', () => {
   it('throttles extension observations', async () => {
     const { post } = await trackPost(base);
     const m = { likes: 20, comments: 3, shares: null, views: null };
-    expect(await observePost('REDDIT', 'abc123', m)).toMatchObject({ recorded: false, reason: 'throttled' });
+    expect(await observePost('REDDIT', 'abc123', m)).toMatchObject({
+      recorded: false,
+      reason: 'throttled',
+    });
     await prisma.snapshot.updateMany({ data: { capturedAt: new Date(Date.now() - 3600_000) } });
     expect(await observePost('REDDIT', 'abc123', m)).toMatchObject({ recorded: true });
     expect((await getPost(post.id))!.latestLikes).toBe(20);
@@ -92,8 +109,18 @@ describe('lookup + observe', () => {
 describe('listPosts', () => {
   it('searches, filters and sorts with unavailable metrics last', async () => {
     const a = await trackPost(base);
-    const b = await trackPost({ ...base, platformPostId: 'def456', title: 'Zig news', metrics: { likes: 99, comments: 1, shares: null, views: null } });
-    const c = await trackPost({ ...base, platformPostId: 'ghi789', title: 'No metrics', metrics: { likes: null, comments: null, shares: null, views: null } });
+    const b = await trackPost({
+      ...base,
+      platformPostId: 'def456',
+      title: 'Zig news',
+      metrics: { likes: 99, comments: 1, shares: null, views: null },
+    });
+    const c = await trackPost({
+      ...base,
+      platformPostId: 'ghi789',
+      title: 'No metrics',
+      metrics: { likes: null, comments: null, shares: null, views: null },
+    });
     const byLikes = await listPosts({ sort: 'likes', dir: 'desc' });
     expect(byLikes.items.map((p) => p.id)).toEqual([b.post.id, a.post.id, c.post.id]);
     const asc = await listPosts({ sort: 'likes', dir: 'asc' });
@@ -104,7 +131,13 @@ describe('listPosts', () => {
 
   it('recordSnapshot ignores all-null metrics', async () => {
     const { post } = await trackPost(base);
-    expect(await recordSnapshot(post.id, { likes: null, comments: null, shares: null, views: null }, 'COLLECTOR')).toBeNull();
+    expect(
+      await recordSnapshot(
+        post.id,
+        { likes: null, comments: null, shares: null, views: null },
+        'COLLECTOR',
+      ),
+    ).toBeNull();
   });
 });
 

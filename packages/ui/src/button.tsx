@@ -9,9 +9,11 @@ export const buttonVariants = cva(
       variant: {
         primary: 'bg-fg text-bg hover:bg-fg/85 shadow-card',
         accent: 'bg-accent text-accent-fg hover:bg-accent/90 shadow-card',
-        secondary: 'bg-surface text-fg border border-border hover:bg-surface-2 hover:border-border-strong shadow-card',
+        secondary:
+          'bg-surface text-fg border border-border hover:bg-surface-2 hover:border-border-strong shadow-card',
         ghost: 'text-fg-muted hover:bg-surface-2 hover:text-fg',
-        danger: 'bg-surface text-danger border border-border hover:bg-danger-soft hover:border-danger/30',
+        danger:
+          'bg-surface text-danger border border-border hover:bg-danger-soft hover:border-danger/30',
       },
       size: {
         sm: 'h-8 px-2.5 text-[13px]',
@@ -24,8 +26,7 @@ export const buttonVariants = cva(
 );
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {}
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {}
 
 export function Button({ className, variant, size, ...props }: ButtonProps) {
   return <button className={cn(buttonVariants({ variant, size }), className)} {...props} />;

@@ -2,7 +2,8 @@ import { defineConfig } from '@playwright/test';
 
 const PORT = 3100;
 export const TEST_DATABASE_URL =
-  process.env.TEST_DATABASE_URL ?? 'postgresql://postgres:postgres@localhost:54329/post_tracker_test';
+  process.env.TEST_DATABASE_URL ??
+  'postgresql://postgres:postgres@localhost:54329/post_tracker_test';
 
 export default defineConfig({
   testDir: './e2e',

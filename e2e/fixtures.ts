@@ -4,10 +4,15 @@ import { fileURLToPath } from 'node:url';
 import { PrismaClient } from '@prisma/client';
 
 export const API = 'http://localhost:3100';
-const EXT_PATH = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../apps/extension/.output/chrome-mv3');
+const EXT_PATH = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../apps/extension/.output/chrome-mv3',
+);
 
 export const db = new PrismaClient({
-  datasourceUrl: process.env.TEST_DATABASE_URL ?? 'postgresql://postgres:postgres@localhost:54329/post_tracker_test',
+  datasourceUrl:
+    process.env.TEST_DATABASE_URL ??
+    'postgresql://postgres:postgres@localhost:54329/post_tracker_test',
 });
 
 export async function resetDb() {
@@ -23,9 +28,14 @@ export const test = base.extend<{ context: BrowserContext; worker: Worker }>({
       channel: 'chromium',
       headless: !process.env.HEADED,
       viewport: { width: 1360, height: 900 },
-      userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36',
+      userAgent:
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36',
       locale: 'en-US',
-      args: [`--disable-extensions-except=${EXT_PATH}`, `--load-extension=${EXT_PATH}`, '--disable-blink-features=AutomationControlled'],
+      args: [
+        `--disable-extensions-except=${EXT_PATH}`,
+        `--load-extension=${EXT_PATH}`,
+        '--disable-blink-features=AutomationControlled',
+      ],
     });
     await use(context);
     await context.close();

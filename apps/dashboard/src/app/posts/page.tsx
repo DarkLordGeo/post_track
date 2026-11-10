@@ -14,9 +14,15 @@ export const metadata: Metadata = { title: 'Tracked posts' };
 
 const SORTS: SortKey[] = ['tracked', 'published', 'likes', 'comments', 'shares', 'views'];
 
-export default async function PostsPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+export default async function PostsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
   const sp = await searchParams;
-  const platform = PLATFORMS.includes(sp.platform as Platform) ? (sp.platform as Platform) : undefined;
+  const platform = PLATFORMS.includes(sp.platform as Platform)
+    ? (sp.platform as Platform)
+    : undefined;
   const sort = SORTS.includes(sp.sort as SortKey) ? (sp.sort as SortKey) : 'tracked';
   const dir = sp.dir === 'asc' ? 'asc' : 'desc';
   const q = sp.q?.slice(0, 200);
@@ -32,7 +38,11 @@ export default async function PostsPage({ searchParams }: { searchParams: Promis
     <>
       <PageHeader
         title="Tracked posts"
-        description={anyTracked ? `${total} ${total === 1 ? 'post' : 'posts'}${q || platform ? ' match your filters' : ' in your collection'}` : 'Your collection is empty'}
+        description={
+          anyTracked
+            ? `${total} ${total === 1 ? 'post' : 'posts'}${q || platform ? ' match your filters' : ' in your collection'}`
+            : 'Your collection is empty'
+        }
       />
       <div className="space-y-4 px-4 py-6 sm:px-8">
         <Suspense>
@@ -46,7 +56,11 @@ export default async function PostsPage({ searchParams }: { searchParams: Promis
               icon={<SearchX />}
               title="No posts match"
               description="Try a different search term or platform filter."
-              action={<Link href="/posts" className="text-sm font-medium text-accent hover:underline">Clear filters</Link>}
+              action={
+                <Link href="/posts" className="text-sm font-medium text-accent hover:underline">
+                  Clear filters
+                </Link>
+              }
             />
           </div>
         ) : (
@@ -55,7 +69,11 @@ export default async function PostsPage({ searchParams }: { searchParams: Promis
               icon={<Inbox />}
               title="Nothing tracked yet"
               description="Install the Post Tracker extension, open a Reddit post and click “Track”. It will show up here instantly."
-              action={<Link href="/extension" className="text-sm font-medium text-accent hover:underline">Set up the extension →</Link>}
+              action={
+                <Link href="/extension" className="text-sm font-medium text-accent hover:underline">
+                  Set up the extension →
+                </Link>
+              }
             />
           </div>
         )}

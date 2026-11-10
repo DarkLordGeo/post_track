@@ -9,7 +9,11 @@ export default function NotFound() {
       icon={<FileQuestion />}
       title="Post not found"
       description="It may have been removed from your collection."
-      action={<Link href="/posts" className="text-sm font-medium text-accent hover:underline">Back to tracked posts</Link>}
+      action={
+        <Link href="/posts" className="text-sm font-medium text-accent hover:underline">
+          Back to tracked posts
+        </Link>
+      }
     />
   );
 }

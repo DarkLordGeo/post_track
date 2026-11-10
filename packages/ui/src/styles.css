@@ -37,12 +37,22 @@
   --animate-shimmer: shimmer 1.6s linear infinite;
 
   @keyframes fade-up {
-    from { opacity: 0; transform: translateY(4px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
   @keyframes shimmer {
-    from { background-position: -200% 0; }
-    to { background-position: 200% 0; }
+    from {
+      background-position: -200% 0;
+    }
+    to {
+      background-position: 200% 0;
+    }
   }
 }
 
@@ -63,16 +73,29 @@
     --color-warn-soft: oklch(0.32 0.06 80);
     --color-x: oklch(0.92 0 0);
   }
-  html { color-scheme: light; }
-  html.dark { color-scheme: dark; }
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
   body {
     background: var(--color-bg);
     color: var(--color-fg);
     font-feature-settings: 'cv11', 'ss01';
     -webkit-font-smoothing: antialiased;
   }
-  *, ::before, ::after { border-color: var(--color-border); }
+  *,
+  ::before,
+  ::after {
+    border-color: var(--color-border);
+  }
   @media (prefers-reduced-motion: reduce) {
-    *, ::before, ::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
   }
 }

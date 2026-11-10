@@ -1,4 +1,10 @@
-import { hasAnyMetric, postKey, type DetectedPost, type PlatformAdapter, type PostIdentity } from '@post-tracker/core';
+import {
+  hasAnyMetric,
+  postKey,
+  type DetectedPost,
+  type PlatformAdapter,
+  type PostIdentity,
+} from '@post-tracker/core';
 import { send } from './messages';
 import { BUTTON_CSS, TOAST_CSS } from './styles';
 
@@ -16,10 +22,13 @@ interface Mounted {
 
 const HOST_TAG = 'post-tracker-action';
 const ICONS = {
-  track: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 11.5 6 7.5l2.5 2.5L14 4.5"/><path d="M10.5 4.5H14V8"/></svg>',
-  check: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3.5 8.5 3 3 6-7"/></svg>',
+  track:
+    '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 11.5 6 7.5l2.5 2.5L14 4.5"/><path d="M10.5 4.5H14V8"/></svg>',
+  check:
+    '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3.5 8.5 3 3 6-7"/></svg>',
   spin: '<svg viewBox="0 0 16 16" class="spin" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 2a6 6 0 1 0 6 6"/></svg>',
-  alert: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 4.5v4"/><circle cx="8" cy="11.3" r=".6" fill="currentColor"/></svg>',
+  alert:
+    '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 4.5v4"/><circle cx="8" cy="11.3" r=".6" fill="currentColor"/></svg>',
 };
 
 export interface InjectorOptions {
@@ -51,7 +60,10 @@ export function runInjector(adapter: PlatformAdapter, opts: InjectorOptions = {}
         : m.state === 'error'
           ? (errorText ?? 'Something went wrong — click to retry')
           : 'Track this post in Post Tracker';
-    b.setAttribute('aria-label', m.state === 'tracked' ? 'Tracked — open in Post Tracker' : 'Track this post');
+    b.setAttribute(
+      'aria-label',
+      m.state === 'tracked' ? 'Tracked — open in Post Tracker' : 'Track this post',
+    );
   }
 
   function setState(key: string, state: State, extra?: { dashboardId?: string; error?: string }) {
@@ -92,7 +104,10 @@ export function runInjector(adapter: PlatformAdapter, opts: InjectorOptions = {}
     const key = postKey(m.identity);
 
     if (m.state === 'tracked') {
-      void send({ type: 'open-dashboard', path: m.dashboardId ? `/posts/${m.dashboardId}` : '/posts' });
+      void send({
+        type: 'open-dashboard',
+        path: m.dashboardId ? `/posts/${m.dashboardId}` : '/posts',
+      });
       return;
     }
     if (m.state !== 'idle' && m.state !== 'error') return;
@@ -119,7 +134,8 @@ export function runInjector(adapter: PlatformAdapter, opts: InjectorOptions = {}
 
   function mount(d: DetectedPost, identity: PostIdentity): Mounted {
     const host = document.createElement(HOST_TAG);
-    host.style.cssText = 'display:inline-flex;align-items:center;margin:0 4px;vertical-align:middle;position:relative;z-index:2;';
+    host.style.cssText =
+      'display:inline-flex;align-items:center;margin:0 4px;vertical-align:middle;position:relative;z-index:2;';
     const shadow = host.attachShadow({ mode: 'open' });
     shadow.innerHTML = `<style>${BUTTON_CSS}</style>`;
     const button = document.createElement('button');
@@ -178,7 +194,12 @@ export function runInjector(adapter: PlatformAdapter, opts: InjectorOptions = {}
       m.observed = true;
       const post = adapter.extract(m.element, location.href);
       if (post && hasAnyMetric(post.metrics)) {
-        void send({ type: 'observe', platform: post.platform, platformPostId: post.platformPostId, metrics: post.metrics });
+        void send({
+          type: 'observe',
+          platform: post.platform,
+          platformPostId: post.platformPostId,
+          metrics: post.metrics,
+        });
       }
     }
   }
@@ -211,7 +232,14 @@ export function runInjector(adapter: PlatformAdapter, opts: InjectorOptions = {}
   scan();
   const observer = new MutationObserver((records) => {
     // Ignore mutations caused by our own elements.
-    if (records.every((r) => [...r.addedNodes].every((n) => n instanceof Element && n.tagName.toLowerCase() === HOST_TAG))) return;
+    if (
+      records.every((r) =>
+        [...r.addedNodes].every(
+          (n) => n instanceof Element && n.tagName.toLowerCase() === HOST_TAG,
+        ),
+      )
+    )
+      return;
     scheduleScan();
   });
   observer.observe(document.body, { childList: true, subtree: true });

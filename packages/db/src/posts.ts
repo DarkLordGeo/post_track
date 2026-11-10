@@ -33,8 +33,10 @@ export async function trackPost(input: TrackPostInput) {
     const backfill: Prisma.PostUpdateInput = {};
     if (!existing.authorName && input.authorName) backfill.authorName = input.authorName;
     if (!existing.authorUrl && input.authorUrl) backfill.authorUrl = input.authorUrl;
-    if (!existing.contentPreview && input.contentPreview) backfill.contentPreview = input.contentPreview;
-    if (!existing.publishedAt && input.publishedAt) backfill.publishedAt = new Date(input.publishedAt);
+    if (!existing.contentPreview && input.contentPreview)
+      backfill.contentPreview = input.contentPreview;
+    if (!existing.publishedAt && input.publishedAt)
+      backfill.publishedAt = new Date(input.publishedAt);
     const post = Object.keys(backfill).length
       ? await prisma.post.update({ where: { id: existing.id }, data: backfill })
       : existing;
@@ -190,7 +192,9 @@ export async function setStatus(id: string, status: TrackingStatus) {
     where: { id },
     data: {
       status,
-      ...(status === 'ACTIVE' ? { nextCollectAt: new Date(), consecutiveFailures: 0, lastError: null } : {}),
+      ...(status === 'ACTIVE'
+        ? { nextCollectAt: new Date(), consecutiveFailures: 0, lastError: null }
+        : {}),
     },
   });
 }
@@ -244,7 +248,10 @@ export async function topMovers(windowMs = 24 * HOUR, take = 5) {
           : null;
       return { post, delta };
     })
-    .filter((r): r is { post: (typeof posts)[number]; delta: number } => r.delta !== null && r.delta !== 0)
+    .filter(
+      (r): r is { post: (typeof posts)[number]; delta: number } =>
+        r.delta !== null && r.delta !== 0,
+    )
     .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
     .slice(0, take);
 }

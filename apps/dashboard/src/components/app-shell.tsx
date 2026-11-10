@@ -16,7 +16,14 @@ function Logo() {
   return (
     <Link href="/" className="flex items-center gap-2 px-2 py-1">
       <span className="grid size-6 place-items-center rounded-md bg-fg text-bg">
-        <svg viewBox="0 0 16 16" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+        <svg
+          viewBox="0 0 16 16"
+          className="size-3.5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        >
           <path d="M2 11.5 6 7.5l2.5 2.5L14 4.5" />
           <path d="M10.5 4.5H14V8" />
         </svg>
@@ -35,7 +42,9 @@ function ThemeToggle() {
     document.documentElement.classList.toggle('dark', next);
     try {
       localStorage.setItem('pt-theme', next ? 'dark' : 'light');
-    } catch {}
+    } catch {
+      // storage unavailable (private mode); theme still applies for this session
+    }
   };
   return (
     <button
@@ -62,7 +71,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               href={href}
               className={cn(
                 'flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] font-medium transition-colors',
-                isActive(href) ? 'bg-surface text-fg shadow-card ring-1 ring-border' : 'text-fg-muted hover:bg-surface-2 hover:text-fg',
+                isActive(href)
+                  ? 'bg-surface text-fg shadow-card ring-1 ring-border'
+                  : 'text-fg-muted hover:bg-surface-2 hover:text-fg',
               )}
             >
               <Icon className="size-4" />
@@ -80,7 +91,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function PageHeader({ title, description, actions }: { title: string; description?: React.ReactNode; actions?: React.ReactNode }) {
+export function PageHeader({
+  title,
+  description,
+  actions,
+}: {
+  title: string;
+  description?: React.ReactNode;
+  actions?: React.ReactNode;
+}) {
   return (
     <header className="flex flex-wrap items-end justify-between gap-4 border-b border-border px-4 pt-8 pb-5 sm:px-8">
       <div className="min-w-0">

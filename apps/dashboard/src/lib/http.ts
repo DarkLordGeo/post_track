@@ -30,7 +30,10 @@ export async function parseBody<T>(req: Request, schema: ZodType<T>) {
   }
   const parsed = schema.safeParse(raw);
   if (!parsed.success) {
-    return { ok: false as const, response: errorResponse(422, 'Invalid request', parsed.error.issues) };
+    return {
+      ok: false as const,
+      response: errorResponse(422, 'Invalid request', parsed.error.issues),
+    };
   }
   return { ok: true as const, data: parsed.data };
 }

@@ -8,15 +8,23 @@ const MAX_BACKOFF_MS = 24 * 60 * 60 * 1000;
 /** After this many consecutive failures the post is marked unavailable. */
 const MAX_FAILURES = 12;
 
-export function defaultFetchers(env = process.env): PlatformFetcher[] {
+export function defaultFetchers(
+  env: Record<string, string | undefined> = process.env,
+): PlatformFetcher[] {
   return [
     createRedditFetcher({
       clientId: env.REDDIT_CLIENT_ID || undefined,
       clientSecret: env.REDDIT_CLIENT_SECRET || undefined,
       userAgent: env.REDDIT_USER_AGENT || 'web:post-tracker:0.1.0 (local development)',
     }),
-    unsupportedFetcher('X', 'X engagement requires paid API access; metrics are captured by the extension when you view the post.'),
-    unsupportedFetcher('LINKEDIN', 'LinkedIn has no public engagement API; metrics are captured by the extension when you view the post.'),
+    unsupportedFetcher(
+      'X',
+      'X engagement requires paid API access; metrics are captured by the extension when you view the post.',
+    ),
+    unsupportedFetcher(
+      'LINKEDIN',
+      'LinkedIn has no public engagement API; metrics are captured by the extension when you view the post.',
+    ),
   ];
 }
 
@@ -41,7 +49,15 @@ export interface CollectOptions {
 export async function collectDue(opts: CollectOptions = {}): Promise<CollectSummary> {
   const now = opts.now ?? new Date();
   const fetchers = opts.fetchers ?? defaultFetchers();
-  const summary: CollectSummary = { checked: 0, collected: 0, failed: 0, unavailable: 0, skipped: 0, rateLimited: [], notes: [] };
+  const summary: CollectSummary = {
+    checked: 0,
+    collected: 0,
+    failed: 0,
+    unavailable: 0,
+    skipped: 0,
+    rateLimited: [],
+    notes: [],
+  };
 
   const due = await prisma.post.findMany({
     where: opts.postIds
@@ -49,14 +65,24 @@ export async function collectDue(opts: CollectOptions = {}): Promise<CollectSumm
       : { status: 'ACTIVE', OR: [{ nextCollectAt: null }, { nextCollectAt: { lte: now } }] },
     orderBy: { nextCollectAt: 'asc' },
     take: opts.limit ?? 500,
-    select: { id: true, platform: true, platformPostId: true, publishedAt: true, consecutiveFailures: true },
+    select: {
+      id: true,
+      platform: true,
+      platformPostId: true,
+      publishedAt: true,
+      consecutiveFailures: true,
+    },
   });
 
   for (const fetcher of fetchers) {
     const posts = due.filter((p) => p.platform === fetcher.platform);
     for (let i = 0; i < posts.length; i += fetcher.batchSize) {
       const batch = posts.slice(i, i + fetcher.batchSize);
-      const targets: CollectTarget[] = batch.map(({ id, platform, platformPostId }) => ({ id, platform, platformPostId }));
+      const targets: CollectTarget[] = batch.map(({ id, platform, platformPostId }) => ({
+        id,
+        platform,
+        platformPostId,
+      }));
       summary.checked += batch.length; // attempted; rolled back below if the batch is rate limited
       const result = await fetcher.fetchBatch(targets);
 
@@ -82,7 +108,10 @@ export async function collectDue(opts: CollectOptions = {}): Promise<CollectSumm
         const remaining = posts.slice(i);
         await prisma.post.updateMany({
           where: { id: { in: remaining.map((p) => p.id) } },
-          data: { nextCollectAt: result.retryAt, lastError: `Rate limited until ${result.retryAt.toISOString()}` },
+          data: {
+            nextCollectAt: result.retryAt,
+            lastError: `Rate limited until ${result.retryAt.toISOString()}`,
+          },
         });
         summary.checked -= batch.length;
         summary.skipped += remaining.length;
@@ -90,19 +119,32 @@ export async function collectDue(opts: CollectOptions = {}): Promise<CollectSumm
       }
 
       for (const post of batch) {
-        const r = result.results.get(post.id) ?? { kind: 'error' as const, reason: 'No result returned' };
+        const r = result.results.get(post.id) ?? {
+          kind: 'error' as const,
+          reason: 'No result returned',
+        };
         const interval = collectionInterval(post.publishedAt, now);
         if (r.kind === 'ok') {
           await recordSnapshot(post.id, r.metrics, 'COLLECTOR', now);
           await prisma.post.update({
             where: { id: post.id },
-            data: { lastCollectedAt: now, nextCollectAt: new Date(now.getTime() + interval), consecutiveFailures: 0, lastError: null },
+            data: {
+              lastCollectedAt: now,
+              nextCollectAt: new Date(now.getTime() + interval),
+              consecutiveFailures: 0,
+              lastError: null,
+            },
           });
           summary.collected++;
         } else if (r.kind === 'gone') {
           await prisma.post.update({
             where: { id: post.id },
-            data: { status: 'UNAVAILABLE', lastCollectedAt: now, lastError: r.reason, nextCollectAt: null },
+            data: {
+              status: 'UNAVAILABLE',
+              lastCollectedAt: now,
+              lastError: r.reason,
+              nextCollectAt: null,
+            },
           });
           summary.unavailable++;
         } else {
@@ -125,7 +167,10 @@ export async function collectDue(opts: CollectOptions = {}): Promise<CollectSumm
         const remaining = posts.slice(i + fetcher.batchSize);
         if (remaining.length) {
           summary.rateLimited.push(fetcher.platform);
-          await prisma.post.updateMany({ where: { id: { in: remaining.map((p) => p.id) } }, data: { nextCollectAt: result.retryAt } });
+          await prisma.post.updateMany({
+            where: { id: { in: remaining.map((p) => p.id) } },
+            data: { nextCollectAt: result.retryAt },
+          });
           summary.skipped += remaining.length;
         }
         break;
