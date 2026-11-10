@@ -14,7 +14,8 @@ interface Mounted {
   host: HTMLElement;
   button: HTMLButtonElement;
   element: Element;
-  identity: PostIdentity;
+  /** Null until resolved on click, for platforms that don't expose ids in the DOM. */
+  identity: PostIdentity | null;
   state: State;
   dashboardId?: string;
   observed?: boolean;
@@ -66,8 +67,15 @@ export function runInjector(adapter: PlatformAdapter, opts: InjectorOptions = {}
     );
   }
 
-  function setState(key: string, state: State, extra?: { dashboardId?: string; error?: string }) {
+  function setState(
+    key: string,
+    state: State,
+    extra?: { dashboardId?: string; error?: string; onlyIf?: State },
+  ) {
     for (const m of byKey.get(key) ?? []) {
+      // Lookups can resolve after a save finished (e.g. the page re-rendered the post mid-save);
+      // they must never downgrade a button that has moved on.
+      if (extra?.onlyIf && m.state !== extra.onlyIf) continue;
       m.state = state;
       if (extra?.dashboardId) m.dashboardId = extra.dashboardId;
       render(m, extra?.error);
@@ -101,7 +109,6 @@ export function runInjector(adapter: PlatformAdapter, opts: InjectorOptions = {}
     // Reddit cards are wrapped in full-card links; never let the click navigate.
     ev.preventDefault();
     ev.stopPropagation();
-    const key = postKey(m.identity);
 
     if (m.state === 'tracked') {
       void send({
@@ -112,7 +119,36 @@ export function runInjector(adapter: PlatformAdapter, opts: InjectorOptions = {}
     }
     if (m.state !== 'idle' && m.state !== 'error') return;
 
-    const post = adapter.extract(m.element, location.href);
+    if (!m.identity) {
+      m.state = 'saving';
+      render(m);
+      const resolved = (await adapter.resolveIdentity?.(m.element)) ?? null;
+      if (!resolved) {
+        m.state = 'error';
+        const msg = 'Could not find this post’s id on the page.';
+        render(m, msg);
+        toast(msg, 'err');
+        return;
+      }
+      register(m, resolved);
+      // It may already be tracked (e.g. from another device or page).
+      const res = await send({
+        type: 'lookup',
+        posts: [{ platform: resolved.platform, platformPostId: resolved.platformPostId }],
+      });
+      const existingId = res.ok ? res.data.tracked[postKey(resolved)] : undefined;
+      if (existingId) {
+        setState(postKey(resolved), 'tracked', { dashboardId: existingId });
+        toast('Already tracked', 'ok', {
+          label: 'View',
+          run: () => void send({ type: 'open-dashboard', path: `/posts/${existingId}` }),
+        });
+        return;
+      }
+    }
+    const key = postKey(m.identity!);
+
+    const post = adapter.extract(m.element, location.href, m.identity!);
     if (!post) {
       setState(key, 'error', { error: 'Could not read this post from the page.' });
       toast('Could not read this post from the page.', 'err');
@@ -132,7 +168,19 @@ export function runInjector(adapter: PlatformAdapter, opts: InjectorOptions = {}
     }
   }
 
-  function mount(d: DetectedPost, identity: PostIdentity): Mounted {
+  function register(m: Mounted, identity: PostIdentity) {
+    m.identity = identity;
+    const key = postKey(identity);
+    if (!byKey.has(key)) byKey.set(key, new Set());
+    const existing = [...byKey.get(key)!][0];
+    byKey.get(key)!.add(m);
+    if (existing && existing.state !== 'unknown') {
+      m.state = existing.state;
+      m.dashboardId = existing.dashboardId;
+    }
+  }
+
+  function mount(d: DetectedPost, identity: PostIdentity | null): Mounted {
     const host = document.createElement(HOST_TAG);
     host.style.cssText =
       'display:inline-flex;align-items:center;margin:0 4px;vertical-align:middle;position:relative;z-index:2;';
@@ -151,25 +199,42 @@ export function runInjector(adapter: PlatformAdapter, opts: InjectorOptions = {}
     else if (d.placement === 'prepend') d.anchor.prepend(host);
     else d.anchor.insertAdjacentElement('afterend', host);
 
-    const m: Mounted = { host, button, element: d.element, identity, state: 'unknown' };
-    button.addEventListener('click', (e) => void onClick(m, e));
-    const key = postKey(identity);
-    if (!byKey.has(key)) byKey.set(key, new Set());
-    const existing = [...byKey.get(key)!][0];
-    byKey.get(key)!.add(m);
-    if (existing && existing.state !== 'unknown') {
-      m.state = existing.state;
-      m.dashboardId = existing.dashboardId;
-    }
+    // Posts whose id is only resolvable on click start out trackable.
+    const m: Mounted = {
+      host,
+      button,
+      element: d.element,
+      identity: null,
+      state: identity ? 'unknown' : 'idle',
+    };
+    // Activate on pointerdown: some sites (X) re-render the action bar the moment the pointer
+    // goes down, so a `click` may never be dispatched. Keyboard activation still uses `click`.
+    let handledPointer = false;
+    button.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      handledPointer = true;
+      setTimeout(() => (handledPointer = false), 600);
+      void onClick(m, e);
+    });
+    button.addEventListener('click', (e) => {
+      if (handledPointer) {
+        handledPointer = false;
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+      void onClick(m, e);
+    });
+    if (identity) register(m, identity);
     mountedFor.set(d.element, m);
     render(m);
     return m;
   }
 
   async function resolveStatus(fresh: Mounted[]) {
-    const pending = fresh.filter((m) => m.state === 'unknown');
+    const pending = fresh.filter((m) => m.state === 'unknown' && m.identity);
     if (!pending.length) return;
-    const keys = [...new Map(pending.map((m) => [postKey(m.identity), m.identity])).values()];
+    const keys = [...new Map(pending.map((m) => [postKey(m.identity!), m.identity!])).values()];
     const res = await send({
       type: 'lookup',
       posts: keys.map(({ platform, platformPostId }) => ({ platform, platformPostId })),
@@ -178,11 +243,11 @@ export function runInjector(adapter: PlatformAdapter, opts: InjectorOptions = {}
       const key = postKey(id);
       if (!res.ok) {
         // Unknown status: still let the user try; the server dedupes anyway.
-        setState(key, 'idle');
+        setState(key, 'idle', { onlyIf: 'unknown' });
         continue;
       }
       const dashboardId = res.data.tracked[key];
-      setState(key, dashboardId ? 'tracked' : 'idle', { dashboardId });
+      setState(key, dashboardId ? 'tracked' : 'idle', { dashboardId, onlyIf: 'unknown' });
     }
     if (res.ok) observeTracked(pending);
   }
@@ -192,7 +257,7 @@ export function runInjector(adapter: PlatformAdapter, opts: InjectorOptions = {}
     for (const m of list) {
       if (m.state !== 'tracked' || m.observed) continue;
       m.observed = true;
-      const post = adapter.extract(m.element, location.href);
+      const post = adapter.extract(m.element, location.href, m.identity ?? undefined);
       if (post && hasAnyMetric(post.metrics)) {
         void send({
           type: 'observe',
@@ -218,7 +283,7 @@ export function runInjector(adapter: PlatformAdapter, opts: InjectorOptions = {}
       const prev = mountedFor.get(d.element);
       if (prev?.host.isConnected) continue;
       const identity = adapter.identify(d.element, location.href);
-      if (!identity) continue;
+      if (!identity && !adapter.resolveIdentity) continue;
       fresh.push(mount(d, identity));
     }
     void resolveStatus(fresh);

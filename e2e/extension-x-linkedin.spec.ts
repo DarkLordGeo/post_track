@@ -90,3 +90,54 @@ test('revisiting a tracked post records a fresh snapshot (after the throttle win
   await page.reload();
   await expect.poll(() => db.snapshot.count(), { timeout: 10_000 }).toBe(2);
 });
+
+/** LinkedIn's current UI (observed 2026-11-11): no post id in the card; id only in the menu. */
+const LI_CURRENT = `<!doctype html><html><body><main><div role="list">
+<div role="listitem" componentkey="update-card-focusABC">
+  <a aria-label="View company: Microsoft" href="https://www.linkedin.com/company/microsoft/">Microsoft</a>
+  <button aria-label="Open control menu for post by Microsoft"></button>
+  <p><span data-testid="expandable-text-box">Synthetic current-UI LinkedIn post</span></p>
+  <div><span>88 reactions</span></div>
+  <div><div><button aria-label="Comment"></button><button aria-label="Repost"></button></div><button aria-label="Send"></button></div>
+</div></div>
+<script>
+  document.querySelector('[aria-label^="Open control menu"]').addEventListener('click', () => {
+    const open = document.querySelector('[role="menu"]');
+    if (open) return open.remove();
+    document.body.insertAdjacentHTML('beforeend', '<div role="menu"><a href="https://www.linkedin.com/preload/embed-modal/?targetUrn=urn%3Ali%3Ashare%3A7525983002573000000">Embed this post</a></div>');
+  });
+</script></main></body></html>`;
+
+test('LinkedIn current UI: resolves the post id on click, then tracks it', async ({
+  context,
+  worker: _w,
+}) => {
+  const url = 'https://www.linkedin.com/company/microsoft/posts/';
+  await context.route(url, (route) =>
+    route.fulfill({ contentType: 'text/html', body: LI_CURRENT }),
+  );
+  const page = await context.newPage();
+  await page.goto(url);
+  const button = page.locator('post-tracker-action button');
+  await expect(button).toHaveAttribute('data-state', 'idle', { timeout: 15_000 });
+  await button.click();
+  await expect(button).toHaveAttribute('data-state', 'tracked');
+  await expect(page.locator('[role="menu"]')).toHaveCount(0);
+  const saved = await db.post.findUniqueOrThrow({
+    where: {
+      platform_platformPostId: {
+        platform: 'LINKEDIN',
+        platformPostId: 'share:7525983002573000000',
+      },
+    },
+  });
+  expect(saved).toMatchObject({ authorName: 'Microsoft', latestLikes: 88, latestComments: null });
+
+  // Clicking Track on the same post after a reload resolves it again and reports a duplicate.
+  await page.reload();
+  const again = page.locator('post-tracker-action button');
+  await expect(again).toHaveAttribute('data-state', 'idle', { timeout: 15_000 });
+  await again.click();
+  await expect(again).toHaveAttribute('data-state', 'tracked');
+  expect(await db.post.count()).toBe(1);
+});

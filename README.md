@@ -53,13 +53,30 @@ To use another PostgreSQL, set `DATABASE_URL` in `packages/db/.env` and `apps/da
 
 ### Platform data access
 
-| Platform | Extension                                                               | Server-side collector                                                                                                                                 |
-| -------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Reddit   | ✅ new + old Reddit, feeds + post pages (verified live)                 | Needs `REDDIT_CLIENT_ID`/`REDDIT_CLIENT_SECRET` (Reddit returns 403 to anonymous server requests). Create an app at https://www.reddit.com/prefs/apps |
-| X        | Beta — built on X's `data-testid` markup, tested on synthetic pages     | Not available (paid API)                                                                                                                              |
-| LinkedIn | Beta — built on LinkedIn's `data-urn` markup, tested on synthetic pages | Not available (no public API)                                                                                                                         |
+| Platform | Extension                                                                                                                                                                    | Server-side collector                                                                                                                                 |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Reddit   | ✅ New + old Reddit, feeds + post pages. Verified end-to-end on live reddit.com with the real extension.                                                                     | Needs `REDDIT_CLIENT_ID`/`REDDIT_CLIENT_SECRET` (Reddit returns 403 to anonymous server requests). Create an app at https://www.reddit.com/prefs/apps |
+| X        | Beta. Verified end-to-end on live x.com (logged-out view) with the real extension; supports both the current markup (no `data-testid`) and the classic `data-testid` markup. | Not available (paid API)                                                                                                                              |
+| LinkedIn | Beta. Adapter verified against the live logged-in UI (company page posts); extension flow tested on a page replicating that UI.                                              | Not available (no public API)                                                                                                                         |
 
-Reddit exposes score and comment count only; shares and views are shown as unavailable.
+Metrics per platform: Reddit = score + comments (no shares/views). X = likes, replies, reposts,
+views (read from the action bar's accessible summary). LinkedIn = reactions only in the current
+UI; comment/repost counts are recorded only when visible, otherwise _unavailable_.
+
+### Beta limitations (X, LinkedIn)
+
+- **LinkedIn post ids are not in the page markup.** In feeds, the id is resolved when you click
+  Track by briefly opening the post's "…" menu and reading its "Embed this post" link (the menu
+  is closed again). On a single-post page (`/feed/update/urn:li:…`) the URL is used. Feed posts
+  therefore show "Track" until clicked, even when already tracked; clicking reports
+  "Already tracked" without creating a duplicate.
+- LinkedIn exposes the same post under different URN kinds (`activity` vs `share`/`ugcPost`).
+  Ids are namespaced, so a post tracked from its `activity` URL and again from a feed
+  (`share` id) can appear twice.
+- X was verified logged-out only (no X session was available). The logged-in UI may still use
+  the classic `data-testid` markup, which is supported but not re-verified live.
+- Both sites change their markup frequently; adapters are isolated in
+  `packages/core/src/adapters/` with fixtures in `packages/core/test/fixtures/`.
 
 ## API
 
@@ -80,6 +97,7 @@ Reddit exposes score and comment count only; shares and views are shown as unava
 pnpm test             # Vitest: adapters (real Reddit markup), repository, collector
 pnpm test:e2e         # Playwright: dashboard + extension (incl. live reddit.com)
 pnpm test:e2e:offline # same, skipping the live Reddit tests
+LIVE_X=1 HEADED=1 pnpm exec playwright test extension-x-live   # live x.com (needs a display)
 pnpm lint && pnpm typecheck
 ```
 

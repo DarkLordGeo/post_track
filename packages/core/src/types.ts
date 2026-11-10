@@ -54,8 +54,16 @@ export interface PlatformAdapter {
   detectPosts(root: ParentNode): DetectedPost[];
   /** Identify a detected post element without full extraction (cheap). */
   identify(element: Element, pageUrl: string): PostIdentity | null;
-  /** Extract full metadata and visible engagement for a post element. */
-  extract(element: Element, pageUrl: string): ExtractedPost | null;
+  /**
+   * Extract full metadata and visible engagement for a post element. `identity` is passed when
+   * it was resolved asynchronously (see `resolveIdentity`).
+   */
+  extract(element: Element, pageUrl: string, identity?: PostIdentity): ExtractedPost | null;
+  /**
+   * Optional: for platforms whose markup does not expose the post id, resolve it on demand
+   * (only when the user clicks Track), e.g. from a lazily rendered menu.
+   */
+  resolveIdentity?(element: Element): Promise<PostIdentity | null>;
 }
 
 export const EMPTY_METRICS: Metrics = { likes: null, comments: null, shares: null, views: null };

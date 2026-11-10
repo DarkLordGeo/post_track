@@ -2,30 +2,35 @@
 
 _Last updated: 2026-11-11_
 
-## Done (built + tested)
+## Verified
 
-- Monorepo (pnpm workspaces), TypeScript, ESLint, Prettier, Vitest, Playwright.
-- PostgreSQL via `embedded-postgres` (no Docker/sudo), Prisma schema: `Post`, `Snapshot`.
-- Platform adapter interface + **Reddit** adapter (new & old Reddit), tested on captured live markup.
-- Extension (WXT, MV3): Track button on every post, tracked-state lookup, duplicate prevention,
-  success/error toasts, passive snapshots on revisit, popup with connection status + settings.
-- Verified live on reddit.com via Playwright with the real extension loaded.
-- Dashboard: overview (KPIs, platforms, recent, top movers), posts list (search, platform
-  filter, sort, mobile layout), post detail (metric cards, engagement chart, snapshot
-  history, pause/resume/delete/collect now), empty/loading/error states, dark mode.
-- Collector: scheduling by post age, batching, rate-limit backoff, failure backoff,
-  removed-post detection. Reddit via OAuth (needs credentials).
-- X + LinkedIn adapters (beta), tested on synthetic pages via the real extension.
+- Monorepo (pnpm workspaces), TypeScript, ESLint, Prettier; lint + typecheck clean.
+- Production builds: dashboard (Next.js 16) and extension (WXT, Chrome MV3).
+- PostgreSQL (embedded-postgres) data survives stopping and restarting both the database and
+  the dashboard.
+- Reddit: real extension on live reddit.com — Track button on post pages and feeds, metadata
+  - metrics persisted, duplicate detection after reload, unreachable-dashboard error state.
+- X: real extension on live x.com (logged-out) — tracked a NASA post from the profile timeline
+  (3/3 runs). Adapter extraction checked on 5 live posts incl. video posts.
+- LinkedIn: adapter run against the live logged-in UI (Microsoft company posts): detection,
+  id resolution via the post menu, author (incl. reposts), text, media, reactions, publish date.
+- Dashboard: list/search/filter/sort, detail chart + history, pause/resume/delete,
+  collect-now messaging, desktop + mobile + dark mode inspected.
+- Collector: snapshots, scheduling, error backoff, rate-limit deferral, removed posts → unavailable,
+  skipped (not fabricated) when no credentials.
+- Snapshot throttling (15 min) for extension observations.
 
-## Known gaps / bugs
+## Known gaps
 
 - Reddit collector unverified against the real API (no credentials available).
-- X/LinkedIn selectors not yet verified on logged-in live pages.
-- No authentication: the API is open to anything that can reach the dashboard (localhost only).
-- Prisma uses `db push` (no migration history yet).
+- LinkedIn extension flow not run in a logged-in browser with the extension installed (the
+  logged-in session is in the user's Chrome; the extension was not installed there).
+- X logged-in UI not verified live.
+- LinkedIn URN kinds (activity vs share/ugcPost) can produce two records for one post.
+- No authentication between extension and dashboard (localhost only); Prisma uses `db push`.
 
 ## Next task
 
-1. Add Reddit API credentials to `apps/dashboard/.env` and verify `pnpm collector --once`.
-2. Verify X and LinkedIn adapters on logged-in pages; capture real fixtures.
-3. Add API-key auth between extension and dashboard; switch to `prisma migrate`.
+1. Load the extension in your Chrome and track a LinkedIn feed post + an X post while logged in.
+2. Add Reddit API credentials and run `pnpm collector --once`.
+3. API key between extension and dashboard; `prisma migrate`.

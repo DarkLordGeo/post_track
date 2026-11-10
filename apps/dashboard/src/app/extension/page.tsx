@@ -78,7 +78,7 @@ export default function ExtensionPage() {
               <div>
                 <p className="font-medium text-fg">X · beta</p>
                 <p className="text-fg-muted">
-                  Timeline and status pages. Likes, replies, reposts and views as shown on the page.
+                  Timelines and post pages. Likes, replies, reposts and views as shown on the page.
                 </p>
               </div>
             </div>
@@ -87,7 +87,8 @@ export default function ExtensionPage() {
               <div>
                 <p className="font-medium text-fg">LinkedIn · beta</p>
                 <p className="text-fg-muted">
-                  Feed and post pages. Reactions, comments and reposts as shown on the page.
+                  Feed and post pages. Reactions (comments and reposts when shown). In feeds the
+                  post id is read from the post’s menu when you click Track.
                 </p>
               </div>
             </div>
