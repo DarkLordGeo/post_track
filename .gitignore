@@ -1,0 +1,12 @@
+node_modules
+.next
+.output
+.wxt
+dist
+.data
+.env
+*.tsbuildinfo
+test-results
+playwright-report
+coverage
+next-env.d.ts

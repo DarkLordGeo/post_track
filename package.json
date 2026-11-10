@@ -1,0 +1,38 @@
+{
+  "name": "post-tracker",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "db:start": "pnpm --filter @post-tracker/db start",
+    "db:push": "pnpm --filter @post-tracker/db push",
+    "db:generate": "pnpm --filter @post-tracker/db generate",
+    "dev": "pnpm --filter @post-tracker/dashboard dev",
+    "dev:extension": "pnpm --filter @post-tracker/extension dev",
+    "collector": "pnpm --filter @post-tracker/dashboard collector",
+    "build": "pnpm --filter @post-tracker/dashboard build && pnpm --filter @post-tracker/extension build",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:offline": "SKIP_LIVE=1 playwright test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "@playwright/test": "^1.65.0",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^7.0.0",
+    "globals": "^16.0.0",
+    "happy-dom": "^20.0.0",
+    "prettier": "^3.9.0",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.72.0",
+    "vitest": "^4.1.12",
+    "@prisma/client": "6.19.3",
+    "@types/chrome": "^0.1.0"
+  },
+  "packageManager": "pnpm@10.20.0"
+}

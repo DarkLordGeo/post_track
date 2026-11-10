@@ -1,0 +1,78 @@
+/* Shared design tokens. Consumers: `@import "tailwindcss"; @import "@post-tracker/ui/styles.css";` */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono-face), ui-monospace, SFMono-Regular, monospace;
+
+  --color-bg: oklch(0.985 0.002 250);
+  --color-surface: oklch(1 0 0);
+  --color-surface-2: oklch(0.97 0.003 250);
+  --color-fg: oklch(0.2 0.01 260);
+  --color-fg-muted: oklch(0.5 0.012 260);
+  --color-fg-subtle: oklch(0.64 0.01 260);
+  --color-border: oklch(0.915 0.005 260);
+  --color-border-strong: oklch(0.85 0.008 260);
+  --color-accent: oklch(0.55 0.17 160);
+  --color-accent-fg: oklch(0.99 0 0);
+  --color-accent-soft: oklch(0.95 0.04 160);
+  --color-danger: oklch(0.58 0.2 25);
+  --color-danger-soft: oklch(0.96 0.03 25);
+  --color-warn: oklch(0.7 0.15 70);
+  --color-warn-soft: oklch(0.96 0.04 85);
+  --color-up: oklch(0.58 0.15 155);
+  --color-down: oklch(0.6 0.19 25);
+
+  --color-reddit: #ff4500;
+  --color-x: oklch(0.2 0 0);
+  --color-linkedin: #0a66c2;
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --shadow-card: 0 1px 2px oklch(0.2 0.01 260 / 0.04), 0 1px 1px oklch(0.2 0.01 260 / 0.03);
+  --shadow-pop: 0 8px 24px -6px oklch(0.2 0.01 260 / 0.14), 0 2px 6px oklch(0.2 0.01 260 / 0.06);
+
+  --animate-fade-up: fade-up 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes shimmer {
+    from { background-position: -200% 0; }
+    to { background-position: 200% 0; }
+  }
+}
+
+@layer base {
+  .dark {
+    --color-bg: oklch(0.16 0.006 260);
+    --color-surface: oklch(0.195 0.007 260);
+    --color-surface-2: oklch(0.23 0.008 260);
+    --color-fg: oklch(0.95 0.004 260);
+    --color-fg-muted: oklch(0.7 0.01 260);
+    --color-fg-subtle: oklch(0.56 0.01 260);
+    --color-border: oklch(0.28 0.008 260);
+    --color-border-strong: oklch(0.36 0.01 260);
+    --color-accent: oklch(0.7 0.15 160);
+    --color-accent-fg: oklch(0.16 0.02 160);
+    --color-accent-soft: oklch(0.3 0.06 160);
+    --color-danger-soft: oklch(0.3 0.07 25);
+    --color-warn-soft: oklch(0.32 0.06 80);
+    --color-x: oklch(0.92 0 0);
+  }
+  html { color-scheme: light; }
+  html.dark { color-scheme: dark; }
+  body {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-feature-settings: 'cv11', 'ss01';
+    -webkit-font-smoothing: antialiased;
+  }
+  *, ::before, ::after { border-color: var(--color-border); }
+  @media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  }
+}

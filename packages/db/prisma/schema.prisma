@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Platform {
+  REDDIT
+  X
+  LINKEDIN
+}
+
+enum TrackingStatus {
+  ACTIVE
+  PAUSED
+  /// The post was deleted/removed or can no longer be reached.
+  UNAVAILABLE
+}
+
+enum SnapshotSource {
+  /// Captured from the rendered page by the browser extension.
+  EXTENSION
+  /// Fetched by the background collector from a platform API.
+  COLLECTOR
+}
+
+model Post {
+  id             String         @id @default(cuid())
+  platform       Platform
+  /// Stable platform identifier (Reddit base36 id, tweet id, LinkedIn activity urn id).
+  platformPostId String
+  canonicalUrl   String
+  originalUrl    String
+  authorName     String?
+  authorHandle   String?
+  authorUrl      String?
+  title          String?
+  contentPreview String?
+  community      String?
+  /// Array of { type: 'image' | 'video' | 'link', url: string }.
+  media          Json           @default("[]")
+  publishedAt    DateTime?
+  trackedAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  status         TrackingStatus @default(ACTIVE)
+
+  /// Latest observed metrics, denormalised for sorting. NULL = unavailable, never "0".
+  latestLikes    Int?
+  latestComments Int?
+  latestShares   Int?
+  latestViews    Int?
+
+  lastCollectedAt     DateTime?
+  nextCollectAt       DateTime?
+  lastError           String?
+  consecutiveFailures Int       @default(0)
+
+  snapshots Snapshot[]
+
+  @@unique([platform, platformPostId])
+  @@index([trackedAt])
+  @@index([status, nextCollectAt])
+}
+
+model Snapshot {
+  id         String         @id @default(cuid())
+  postId     String
+  post       Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
+  capturedAt DateTime       @default(now())
+  source     SnapshotSource
+  likes      Int?
+  comments   Int?
+  shares     Int?
+  views      Int?
+
+  @@index([postId, capturedAt])
+}

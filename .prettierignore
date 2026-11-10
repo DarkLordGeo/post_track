@@ -1,0 +1,7 @@
+node_modules
+.next
+.output
+.wxt
+.data
+package-lock.json
+packages/core/test/fixtures

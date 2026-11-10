@@ -1,0 +1,8 @@
+@import 'tailwindcss';
+@import '@post-tracker/ui/styles.css';
+
+@source '../../../../packages/ui/src';
+
+@layer base {
+  .tabular { font-variant-numeric: tabular-nums; }
+}
